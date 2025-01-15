@@ -1,4 +1,4 @@
-/* ESP8266-based WiFi scrolling display by Matt H
+/* WiFi scrolling display by Matt H
    http://m-harrison.org
    https://github.com/mattybigback
 
@@ -26,10 +26,7 @@
 
 #include "main.hpp"
 
-
 // Matrix display array
-// If you increase the buffer over 500 then you must
-// also increase the size of mainPageBuffer. 500 is PLENTY.
 char curMessage[BUF_SIZE] = {""};
 char newMessage[BUF_SIZE] = {""};
 
@@ -60,7 +57,7 @@ WebServer server(80); // Server on port 80 (default HTTP port) - can change it t
 
    Top line for hardware SPI (ESP-12 etc)
    Bottom line for software SPI (ESP-01)
- */
+*/
 
 MD_Parola matrix = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 //MD_Parola matrix = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
@@ -92,7 +89,6 @@ void messageScroll() {
 
 void startWifiManager() {
     // Create instance of WiFiManager
-
     WiFiManager wifiManager;
     wifiManager.setAPCallback(wmCallback);
     // Buffer for AP Name

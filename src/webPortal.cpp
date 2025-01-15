@@ -1,4 +1,5 @@
 #include "webPortal.hpp"
+
 // Server response to a request for root page
 void handleRoot() {
   // Turn the LED or NeoPixel orange to indicate action
