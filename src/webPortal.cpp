@@ -46,11 +46,11 @@ void handleRoot() {
 // Server response to incoming data from form
 void handleForm() {
     neopixelWrite(RGB_BRIGHTNESS, 10, 20, 0); //Orange
-    String incomingMessage = server.arg("messageToScroll"); // Must use strings as that is what the library returns (BLEURGH)
-    String incomingIntensity = server.arg("intensity");     // Just look at all of them
-    String incomingscrollSpeed = server.arg("speed");       // All that memory wasted
+    String incomingMessage = server.arg("messageToScroll"); // Must use strings as that is what the library returns
+    String incomingIntensity = server.arg("intensity");     
+    String incomingscrollSpeed = server.arg("speed");       
 
-    incomingMessage.toCharArray(newMessage, BUF_SIZE); // Convert incoming message to a char array (much better);
+    incomingMessage.toCharArray(newMessage, BUF_SIZE); // Convert incoming message to a char array;
     intensity = incomingIntensity.toInt();             // Convert incoming intensity value to int
     scrollSpeed = incomingscrollSpeed.toInt();         // Comvert incoming scroll value to int
 
