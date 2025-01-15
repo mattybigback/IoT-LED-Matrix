@@ -59,7 +59,22 @@
 #ifdef RGB_BUILTIN
 #undef RGB_BUILTIN
 #endif
-#define RGB_BUILTIN 10
+#define RGB_BUILTIN 8
+
+#define BAUD_RATE 115200
+#define DEBUG 1
+
+#if DEBUG == 1
+#define debug(x) Serial0.print(x)
+#define debugln(x) Serial0.println(x)
+#define debugSetup(x) Serial0.begin(x)
+#else
+#define debug(x)
+#define debugln(x)
+#define debugSetup(x)
+#endif
+
+#define FORMAT_LITTLEFS_IF_FAILED true
 
 // Matrix display array
 const int BUF_SIZE = 500; // Be careful here.
@@ -133,7 +148,7 @@ void handleRoot() {
     neopixelWrite(RGB_BRIGHTNESS, 10, 20, 0); //Orange
     char mainPageBuffer[1024];
     sprintf(mainPageBuffer, mainPage, BUF_SIZE, curMessage, intensity, scrollSpeed);
-    // Serial.println(mainPageBuffer); //Useful for debugging
+    debugln(mainPageBuffer); //Useful for debugging
     server.send(200, "text/html", mainPageBuffer); // Send mainPageBuffer array as HTML
 }
 
@@ -166,10 +181,10 @@ void handleForm() {
     resetDisplay = true;
 
     // Debug output
-    Serial.println(newMessage);
-    Serial.println(intensity);
-    Serial.println(scrollSpeed);
-    Serial.println();
+    debugln(newMessage);
+    debugln(intensity);
+    debugln(scrollSpeed);
+    debugln();
 
     // Send mainPage array as HTML
     server.send(200, "text/html", updatePage);
@@ -200,8 +215,6 @@ void wmCallback(WiFiManager *myWiFiManager) {
 
 }
 
-
-
 void factoryReset() {
     // Holds execution until reset button is released
     neopixelWrite(RGB_BUILTIN,20,20,20);
@@ -226,12 +239,13 @@ uint32_t getChipId() {
 }
 
 void setup() {
+    debugSetup(BAUD_RATE);
+    debugln("Booting...");
     WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+    debugln("Wifi mode set");
     neopixelWrite(RGB_BUILTIN,10,10,0); // yellow
     delay(250);
     pinMode(SOFT_RESET, INPUT_PULLUP);
-
-
 
     // Begin matrix, set scroll speed and intensity from global variables
     matrix.begin();
@@ -273,14 +287,15 @@ void setup() {
     messageScroll();
 
     // Begin LittleFS and check if it successfully mounts FS.
-    if (!LittleFS.begin()) {
-        LittleFS.format();
+    if(!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)){
+    debugln("LittleFS Mount Failed");
+    return;
     }
     String incomingFS; // String object for passing data to and from LittleFS
 
     // Check if message file exists, and if it doesn't then create one
     if (!LittleFS.exists(messagePath)) {
-        // Serial.println("No message file exists. Creating one now...");
+        debugln("No message file exists. Creating one now...");
         messageFile = LittleFS.open(messagePath, "w");
         messageFile.print("Hello, World!");
         messageFile.close();
@@ -292,7 +307,7 @@ void setup() {
 
     // Check if speed conf file exists, and if it doesn't then create one
     if (!LittleFS.exists(speedConfPath)) {
-        // Serial.println("No speed file exists. Creating one now...");
+        // debugln("No speed file exists. Creating one now...");
         scrollSpeedConfFile = LittleFS.open(speedConfPath, "w");
         scrollSpeedConfFile.print("50");
         scrollSpeedConfFile.close();
@@ -304,7 +319,7 @@ void setup() {
 
     // Check if intensity conf file exists, and if it doesn't then create one
     if (!LittleFS.exists(intensityConfPath)) {
-        // Serial.println("No intensity file exists. Creating one now...");
+        // debugln("No intensity file exists. Creating one now...");
         intensityConfFile = LittleFS.open(intensityConfPath, "w");
         intensityConfFile.print("7");
         intensityConfFile.close();
