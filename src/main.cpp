@@ -98,14 +98,14 @@ void startWifiManager() {
     // Sets a static IP so that it is easy to connect to while in AP mode
     // wifiManager.setAPStaticIPConfig(IPAddress(10, 0, 0, 1), IPAddress(10, 0, 0, 1), IPAddress(255, 0, 0, 0));
     wifiManager.autoConnect(APName);
-    neopixelWrite(RGB_BUILTIN,20,20,0); // green;
+    neopixelWrite(RGB_BUILTIN,0,20,0); // ;
 }
 
 void wmCallback(WiFiManager *myWiFiManager) {
     matrix.print("SETUP");
-    neopixelWrite(RGB_BUILTIN,0,0,127); // BLUE
+    neopixelWrite(RGB_BUILTIN, BLUE);
     if (!digitalRead(SOFT_RESET)) {
-        neopixelWrite(RGB_BUILTIN, 100,0,0);
+        neopixelWrite(RGB_BUILTIN, RED);
         factoryReset();
     }
 
@@ -113,7 +113,7 @@ void wmCallback(WiFiManager *myWiFiManager) {
 
 void factoryReset() {
     // Holds execution until reset button is released
-    neopixelWrite(RGB_BUILTIN,20,20,20);
+    neopixelWrite(RGB_BUILTIN, WHITE);
     while (digitalRead(SOFT_RESET) == LOW) {
         yield(); // Hands execution over to network stack to stop the ESP crashing
     }
@@ -139,7 +139,7 @@ void setup() {
     debugln("Booting...");
     WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
     debugln("Wifi mode set");
-    neopixelWrite(RGB_BUILTIN,10,10,0); // yellow
+    neopixelWrite(RGB_BUILTIN, YELLOW); // yellow
     delay(250);
     pinMode(SOFT_RESET, INPUT_PULLUP);
 
@@ -157,7 +157,7 @@ void setup() {
 
     // Start WiFiManager
     startWifiManager();
-    neopixelWrite(RGB_BUILTIN,20,0,0); // green
+    neopixelWrite(RGB_BUILTIN, GREEN); // green
 
     server.on("/", handleRoot);       // Function to call when root page is loaded
     server.on("/update", handleForm); // Function to call when form is submitted and update page is loaded
@@ -232,7 +232,7 @@ void setup() {
 
 void loop() {
     // put your main code here, to run repeatedly:
-    neopixelWrite(RGB_BRIGHTNESS, 30,0,0);
+    neopixelWrite(RGB_BRIGHTNESS, GREEN);
     messageScroll();       // Scroll the message
     server.handleClient(); // Keep web server ticking over
         if (!digitalRead(SOFT_RESET)) {

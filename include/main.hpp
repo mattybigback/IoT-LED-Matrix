@@ -20,6 +20,7 @@
 // Web portal
 #include "webpages/update.h"
 #include "webPortal.hpp"
+#include "colours.hpp"
 
 // Set the matrix type
 // Read MD_Parola documentation for which option to use for other modules
