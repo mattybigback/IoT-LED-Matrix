@@ -24,60 +24,10 @@
    Use this code at your own risk. I know I do.
 */
 
-// File system libraries
-#include <FS.h>
-#include <LittleFS.h> //SPIFFS depreciated, use LittleFS instead
+#include "main.hpp"
 
-// Network-related libraries
-#include <DNSServer.h>
-#include <NetBIOS.h>
-#include <WebServer.h>
-#include <WiFi.h>
-#include <WiFiManager.h>
-
-// Matrix-related libraries
-#include <MD_MAX72xx.h>
-#include <MD_Parola.h>
-#include <SPI.h>
-
-// Web pages - raw literals stored within their own header files
-#include "index.h"
-#include "update.h"
-
-// Set the matrix type
-// Read MD_Parola documentation for which option to use for other modules
-#define HARDWARE_TYPE MD_MAX72XX::FC16_HW
-
-// Set number of MAX72xx chips being used
-#define MAX_DEVICES 4
-
-#define CLK_PIN SCK  // GPIO2
-#define DATA_PIN MOSI // GPIO4
-#define CS_PIN SS   // GPIO5
-#define SOFT_RESET 6
-
-#ifdef RGB_BUILTIN
-#undef RGB_BUILTIN
-#endif
-#define RGB_BUILTIN 8
-
-#define BAUD_RATE 115200
-#define DEBUG 1
-
-#if DEBUG == 1
-#define debug(x) Serial0.print(x)
-#define debugln(x) Serial0.println(x)
-#define debugSetup(x) Serial0.begin(x)
-#else
-#define debug(x)
-#define debugln(x)
-#define debugSetup(x)
-#endif
-
-#define FORMAT_LITTLEFS_IF_FAILED true
 
 // Matrix display array
-const int BUF_SIZE = 500; // Be careful here.
 // If you increase the buffer over 500 then you must
 // also increase the size of mainPageBuffer. 500 is PLENTY.
 char curMessage[BUF_SIZE] = {""};
@@ -96,10 +46,6 @@ int scrollSpeed = 90;
 // WiFi AP Name - Should not exceed 24 chracters as the maximum length for an SSID is 32 characters, and 8 are used for the board ID
 const char *APNamePrefix = "Mattrix";
 
-// FS Paths
-#define messagePath "/message.txt"
-#define intensityConfPath "/intens.txt"
-#define speedConfPath "/speed.txt"
 
 // Scrolling effects
 textEffect_t scrollEffect = PA_SCROLL_LEFT;
@@ -143,52 +89,6 @@ void messageScroll() {
     }
 }
 
-// Server response to a request for root page
-void handleRoot() {
-    neopixelWrite(RGB_BRIGHTNESS, 10, 20, 0); //Orange
-    char mainPageBuffer[1024];
-    sprintf(mainPageBuffer, mainPage, BUF_SIZE, curMessage, intensity, scrollSpeed);
-    debugln(mainPageBuffer); //Useful for debugging
-    server.send(200, "text/html", mainPageBuffer); // Send mainPageBuffer array as HTML
-}
-
-// Server response to incoming data from form
-void handleForm() {
-    neopixelWrite(RGB_BRIGHTNESS, 10, 20, 0); //Orange
-    String incomingMessage = server.arg("messageToScroll"); // Must use strings as that is what the library returns (BLEURGH)
-    String incomingIntensity = server.arg("intensity");     // Just look at all of them
-    String incomingscrollSpeed = server.arg("speed");       // All that memory wasted
-
-    incomingMessage.toCharArray(newMessage, BUF_SIZE); // Convert incoming message to a char array (much better);
-    intensity = incomingIntensity.toInt();             // Convert incoming intensity value to int
-    scrollSpeed = incomingscrollSpeed.toInt();         // Comvert incoming scroll value to int
-
-    // Write message, speed and intensity files to LittleFS
-    messageFile = LittleFS.open(messagePath, "w");
-    messageFile.print(newMessage);
-    messageFile.close();
-    scrollSpeedConfFile = LittleFS.open(speedConfPath, "w");
-    scrollSpeedConfFile.print(scrollSpeed);
-    scrollSpeedConfFile.close();
-    intensityConfFile = LittleFS.open(intensityConfPath, "w");
-    intensityConfFile.print(intensity);
-    intensityConfFile.close();
-
-    // Set the newMessageAvailable flag, clear the display, reset the display and set the resetDisplay flag
-    newMessageAvailable = true;
-    matrix.displayClear();
-    matrix.displayReset();
-    resetDisplay = true;
-
-    // Debug output
-    debugln(newMessage);
-    debugln(intensity);
-    debugln(scrollSpeed);
-    debugln();
-
-    // Send mainPage array as HTML
-    server.send(200, "text/html", updatePage);
-}
 
 void startWifiManager() {
     // Create instance of WiFiManager
