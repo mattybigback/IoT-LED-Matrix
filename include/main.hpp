@@ -7,10 +7,17 @@
 
 // Network-related libraries
 #include <DNSServer.h>
-#include <NetBIOS.h>
-#include <WebServer.h>
-#include <WiFi.h>
+#if defined(ARDUINO_ARCH_ESP32)
+    #include <NetBIOS.h>
+    #include <WebServer.h>
+    #include <WiFi.h>
+    #elif defined(ARDUINO_ARCH_ESP8266)
+    #include <ESP8266NetBIOS.h>
+    #include <ESP8266WebServer.h>
+    #include <ESP8266WiFi.h>
+#endif
 #include <WiFiManager.h>
+
 
 // Matrix-related libraries
 #include <MD_MAX72xx.h>
@@ -29,10 +36,17 @@
 // Set number of MAX72xx chips being used
 #define MAX_DEVICES 4
 
+#if defined(ARDUINO_ARCH_ESP32)
 #define CLK_PIN SCK  // GPIO2
 #define DATA_PIN MOSI // GPIO4
 #define CS_PIN SS   // GPIO5
 #define SOFT_RESET 6
+#elif defined(ARDUINO_ARCH_ESP8266)
+#define CLK_PIN SCK // GPIO14 (D5)   // SCK
+#define DATA_PIN MOSI // GPIO13 (D7) // MOSI  // Data In
+#define CS_PIN SS   // GPIO15 (D8)   // SS
+#define SOFT_RESET 4 // GPIO2 (D4)   // Reset pin for the display
+#endif
 
 #ifdef RGB_BUILTIN
 #undef RGB_BUILTIN
@@ -45,19 +59,27 @@
 #define speedConfPath "/speed.txt"
 
 #define BAUD_RATE 115200
-#define DEBUG 1
+#define DEBUG 0 // Set to 1 to enable debug messages
 
 #if DEBUG == 1
-#define debug(x) Serial0.print(x)
-#define debugln(x) Serial0.println(x)
-#define debugSetup(x) Serial0.begin(x)
+    #if defined(ARDUINO_ARCH_ESP8266)
+        #define Serial0 Serial
+    #endif
+    #define debug(x) Serial0.print(x)
+    #define debugln(x) Serial0.println(x)
+    #define debugSetup(x) Serial0.begin(x)
 #else
-#define debug(x)
-#define debugln(x)
-#define debugSetup(x)
+    #define debug(x)
+    #define debugln(x)
+    #define debugSetup(x)
 #endif
 
+#if defined(ARDUINO_ARCH_ESP32)
 #define FORMAT_LITTLEFS_IF_FAILED true
+#elif defined(ARDUINO_ARCH_ESP8266)
+#define FORMAT_LITTLEFS_IF_FAILED
+#endif
+
 
 // Matrix display array
 #define MSG_BUF_SIZE 501 // Be careful here.
@@ -86,8 +108,11 @@ extern textEffect_t scrollEffect;
 extern textPosition_t scrollAlign;
 
 // Instantiate objects
+#if defined(ARDUINO_ARCH_ESP32)
 extern WebServer server; // Server on port 80 (default HTTP port) - can change it to a different port if need be.
-
+#elif defined(ARDUINO_ARCH_ESP8266)
+extern ESP8266WebServer server; // Server on port 80 (default HTTP port) - can change it to a different port if need be.
+#endif
 extern MD_Parola matrix;
 
 // // File objects for FS

@@ -3,7 +3,9 @@
 // Server response to a request for root page
 void handleRoot() {
     // Turn the LED or NeoPixel orange to indicate action
+    #if defined(HAS_NEOPIXEL)
     neopixelWrite(RGB_BUILTIN, ORANGE); // Orange
+    #endif
     debugln("Web portal index requested");
     // Open file in read mode
     File webpage = LittleFS.open("/confpage/index.html", "r");
@@ -43,7 +45,9 @@ void handleRoot() {
 // Server response to incoming data from form
 void handleForm() {
     // visual feedback
+    #if defined(HAS_NEOPIXEL)
     neopixelWrite(RGB_BRIGHTNESS, ORANGE);
+    #endif
 
     char intensityBuf[3];
     char speedBuf[4];

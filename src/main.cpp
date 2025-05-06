@@ -1,16 +1,15 @@
 /* WiFi scrolling display by Matt H
-   http://m-harrison.org
    https://github.com/mattybigback
 
    Required hardware:
 
-   * ESP8266 module (tested with the below modules):
-      ESP-01S
-      NodeMCU 1.0 (using hardware SPI)
-      Wemos D1 R2 (using hardware SPI)
+    * ESP8266 or ESP32 (tested with the below modules)
+        Wemos D1 - ESP8266
+        Generic ESP32-C3 devkit (using Wemos Lolin C3 pin definitions) - ESP32-C3
+        
 
-   * MAX7219 matrix module (tested with the below modules)
-      FC-16 32x8 module
+    * MAX7219 matrix module (tested with the below modules)
+        FC-16 32x8 module
 
    MD_MAX72xx and MD_Parola libraries written and maintainesd by Marco Colli (MajicDesigns)
    https://github.com/MajicDesigns
@@ -50,8 +49,11 @@ textPosition_t scrollAlign = PA_LEFT;
 const int scrollPause = 0; // in milliseconds. Not used by default - holds the screen at the end of the message
 
 // Instantiate objects
-WebServer server(80); // Server on port 80 (default HTTP port) - can change it to a different port if need be.
-
+#if defined(ARDUINO_ARCH_ESP32)
+WebServer server(80); 
+#elif defined(ARDUINO_ARCH_ESP8266)
+ESP8266WebServer server(80);
+#endif
 /*
    Uncommand the relevant line
 
@@ -94,14 +96,20 @@ void startWifiManager() {
     // Sets a static IP so that it is easy to connect to while in AP mode
     // wifiManager.setAPStaticIPConfig(IPAddress(10, 0, 0, 1), IPAddress(10, 0, 0, 1), IPAddress(255, 0, 0, 0));
     wifiManager.autoConnect(APName);
-    neopixelWrite(RGB_BUILTIN,0,20,0); // ;
+    #if defined(HAS_NEOPIXEL)
+    neopixelWrite(RGB_BUILTIN,0,20,0);
+    #endif
 }
 
 void wmCallback(WiFiManager *myWiFiManager) {
     matrix.print("SETUP");
+    #if defined(HAS_NEOPIXEL)
     neopixelWrite(RGB_BUILTIN, BLUE);
+    #endif
     if (!digitalRead(SOFT_RESET)) {
+        #if defined(HAS_NEOPIXEL)
         neopixelWrite(RGB_BUILTIN, RED);
+        #endif
         factoryReset();
     }
 
@@ -109,7 +117,9 @@ void wmCallback(WiFiManager *myWiFiManager) {
 
 void factoryReset() {
     // Holds execution until reset button is released
+    #if defined(HAS_NEOPIXEL)
     neopixelWrite(RGB_BUILTIN, WHITE);
+    #endif
     while (digitalRead(SOFT_RESET) == LOW) {
         yield(); // Hands execution over to network stack to stop the ESP crashing
     }
@@ -123,10 +133,15 @@ void factoryReset() {
 }
 
 uint32_t getChipId() {
+    
+    #if defined(ARDUINO_ARCH_ESP32)
     uint32_t id = 0;
     for (int i = 0; i < 17; i = i + 8) {
         id |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
     }
+    #elif defined(ARDUINO_ARCH_ESP8266)
+    uint32_t id = ESP.getChipId(); // Get the chip ID
+    #endif
     return id;
 }
 
@@ -135,7 +150,9 @@ void setup() {
     debugln("Booting...");
     WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
     debugln("Wifi mode set");
+    #if defined(HAS_NEOPIXEL)
     neopixelWrite(RGB_BUILTIN, YELLOW); // yellow
+    #endif
     delay(250);
     pinMode(SOFT_RESET, INPUT_PULLUP);
 
@@ -153,7 +170,9 @@ void setup() {
 
     // Start WiFiManager
     startWifiManager();
+    #if defined(HAS_NEOPIXEL)
     neopixelWrite(RGB_BUILTIN, GREEN); // green
+    #endif
 
     server.on("/", handleRoot);       // Function to call when root page is loaded
     server.on("/update", handleForm); // Function to call when form is submitted and update page is loaded
@@ -229,7 +248,9 @@ void setup() {
 
 void loop() {
     // put your main code here, to run repeatedly:
+    #if defined(HAS_NEOPIXEL)
     neopixelWrite(RGB_BRIGHTNESS, GREEN);
+    #endif
     messageScroll();       // Scroll the message
     server.handleClient(); // Keep web server ticking over
         if (!digitalRead(SOFT_RESET)) {
