@@ -2,81 +2,112 @@
 
 // Server response to a request for root page
 void handleRoot() {
-  // Turn the LED or NeoPixel orange to indicate action
-  neopixelWrite(RGB_BUILTIN, 255, 128, 0); // Orange
-  debugln("Web portal index loaded");
-  // Open file in read mode
-  File webpage = LittleFS.open("/confpage/index.html", "r");
-  if (!webpage) {
-    debugln("Failed to open /confpage/index.html");
-    server.send(404, "text/plain", "File not found");
-    return;
-  } else {
-    debugln("File found succesfully");
-  }
-  // Read file contents into a String
-  String pageContent;
-  while (webpage.available()) {
-    pageContent += (char)webpage.read();
-  }
-  webpage.close();
-  debugln("File loaded succesfully");
+    // Turn the LED or NeoPixel orange to indicate action
+    neopixelWrite(RGB_BUILTIN, ORANGE); // Orange
+    debugln("Web portal index requested");
+    // Open file in read mode
+    File webpage = LittleFS.open("/confpage/index.html", "r");
+    if (!webpage) {
+      server.send(404, "text/plain", "Not found");
+      return;
+    }
+    String pageContent = webpage.readString();
+    webpage.close();
+    debugln("File loaded succesfully");
 
+    char mainPageBuffer[PAGE_BUF_SIZE];
 
-  // We need a buffer large enough to hold the entire page with replacements.
-  // Make sure it's large enough for your HTML plus variable expansions.
-  char mainPageBuffer[1024];
+    int len = snprintf(
+        mainPageBuffer,      // destination buffer
+        PAGE_BUF_SIZE,       // max page size (incl. NUL)
+        pageContent.c_str(), // HTML template
+        curMessage,          // %s → current message
+        MSG_BUF_SIZE-1,      // %d → max message length
+        intensity,           // %d → intensity value
+        INTENSITY_MIN,       // %d → min intensity value
+        INTENSITY_MAX,       // %d → max intensity value
+        scrollSpeed,         // %d → scroll speed value
+        SCROLL_SPEED_MIN,    // %d → min scroll speed value
+        SCROLL_SPEED_MAX     // %d → max scroll speed value
+    );
 
-  // Insert your variables in the exact order the placeholders appear
-  // e.g. `sprintf(buffer, pageContent.c_str(), messageToScroll.c_str(), intensity, speed);`
-  sprintf(
-    mainPageBuffer, 
-    pageContent.c_str(),
-    BUF_SIZE,
-    curMessage,
-    intensity,
-    scrollSpeed
-  );
+    if (len < 0 || (size_t)len >= PAGE_BUF_SIZE) {
+        debugln("ERROR: output truncated or snprintf failed");
+        server.send(500, "text/plain", "Server error");
+        return;
+    }
 
-  // Serve the modified page
-  server.send(200, "text/html", mainPageBuffer);
+    server.send(200, "text/html", mainPageBuffer);
 }
-
 
 // Server response to incoming data from form
 void handleForm() {
-    neopixelWrite(RGB_BRIGHTNESS, 10, 20, 0); //Orange
-    String incomingMessage = server.arg("messageToScroll"); // Must use strings as that is what the library returns
-    String incomingIntensity = server.arg("intensity");     
-    String incomingscrollSpeed = server.arg("speed");       
+    // visual feedback
+    neopixelWrite(RGB_BRIGHTNESS, ORANGE);
 
-    incomingMessage.toCharArray(newMessage, BUF_SIZE); // Convert incoming message to a char array;
-    intensity = incomingIntensity.toInt();             // Convert incoming intensity value to int
-    scrollSpeed = incomingscrollSpeed.toInt();         // Comvert incoming scroll value to int
+    char intensityBuf[3];
+    char speedBuf[4];
+    debugln("Web portal update requested");
+    // Open file in read mode
+    File webpage = LittleFS.open("/confpage/update.html", "r");
+    if (!webpage) {
+      server.send(404, "text/plain", "Not found");
+      return;
+    }
+    String pageContent = webpage.readString();
+    webpage.close();
+    debugln("File loaded succesfully");
 
-    // Write message, speed and intensity files to LittleFS
-    messageFile = LittleFS.open(messagePath, "w");
-    messageFile.print(newMessage);
-    messageFile.close();
-    scrollSpeedConfFile = LittleFS.open(speedConfPath, "w");
-    scrollSpeedConfFile.print(scrollSpeed);
-    scrollSpeedConfFile.close();
-    intensityConfFile = LittleFS.open(intensityConfPath, "w");
-    intensityConfFile.print(intensity);
-    intensityConfFile.close();
 
-    // Set the newMessageAvailable flag, clear the display, reset the display and set the resetDisplay flag
+    // Read and convert in one go—no named String variables
+    server.arg("messageToScroll").toCharArray(newMessage, MSG_BUF_SIZE);
+    server.arg("intensity").toCharArray(intensityBuf, sizeof(intensityBuf));
+    server.arg("speed").toCharArray(speedBuf, sizeof(speedBuf));
+    debug("Message: ");
+    debugln(newMessage);
+    debug("Message length: ");
+    debugln(strlen(newMessage));
+    debug("Intensity: ");
+    debugln(intensityBuf);
+    debug("Speed: ");
+    debugln(speedBuf);
+
+    int parsedIntensity = atoi(intensityBuf);
+    int parsedScrollSpeed = atoi(speedBuf);
+
+    // 1) check intensity range
+    if (parsedIntensity < INTENSITY_MIN || parsedIntensity > INTENSITY_MAX) {
+        char errBuf[50];
+        snprintf(errBuf, sizeof(errBuf), "Error: intensity must be between %d and %d", INTENSITY_MIN, INTENSITY_MAX);
+        debugln(errBuf);
+        server.send(400, "text/plain", errBuf);
+        return;
+    }
+
+    // 2) check speed range
+    if (parsedScrollSpeed < SCROLL_SPEED_MIN || parsedScrollSpeed > SCROLL_SPEED_MAX) {
+        char errBuf[50];
+        snprintf(errBuf, sizeof(errBuf), "Error: speed must be between %d and %d", SCROLL_SPEED_MIN, SCROLL_SPEED_MAX);
+        server.send(400, "text/plain", errBuf);
+        debugln(errBuf);
+        return;
+    }
+
+    // all good — commit settings
+    intensity = parsedIntensity;
+    scrollSpeed = parsedScrollSpeed;
+
+    LittleFS.open(messagePath, "w").print(newMessage);
+    LittleFS.open(speedConfPath, "w").print(scrollSpeed);
+    LittleFS.open(intensityConfPath, "w").print(intensity);
+
+    // Update flags, clear/reset display, and debug-log
+
     newMessageAvailable = true;
     matrix.displayClear();
     matrix.displayReset();
     resetDisplay = true;
 
-    // Debug output
-    debugln(newMessage);
-    debugln(intensity);
-    debugln(scrollSpeed);
-    debugln();
-
-    // Send mainPage array as HTML
-    server.send(200, "text/html", updatePage);
+    // Send HTTP response
+    server.send(200, "text/html", pageContent);
 }

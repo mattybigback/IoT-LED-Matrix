@@ -18,7 +18,7 @@
 #include <SPI.h>
 
 // Web portal
-#include "webpages/update.h"
+//#include "webpages/update.h"
 #include "webPortal.hpp"
 #include "colours.hpp"
 
@@ -60,9 +60,15 @@
 #define FORMAT_LITTLEFS_IF_FAILED true
 
 // Matrix display array
-#define BUF_SIZE 500 // Be careful here.
+#define MSG_BUF_SIZE 501 // Be careful here.
 // If you increase the buffer over 500 then you must
-// also increase the size of mainPageBuffer. 500 is PLENTY.
+// also increase the size of PAGE_BUF_SIZE.
+#define PAGE_BUF_SIZE 2048 // 2kB for the HTML page buffer
+#define INTENSITY_MIN 0
+#define INTENSITY_MAX 15
+#define SCROLL_SPEED_MIN 10
+#define SCROLL_SPEED_MAX 200
+
 extern char curMessage[];
 extern char newMessage[];
 
@@ -84,9 +90,9 @@ extern WebServer server; // Server on port 80 (default HTTP port) - can change i
 
 extern MD_Parola matrix;
 
-// File objects for FS
-extern File messageFile;
-extern File scrollSpeedConfFile;
-extern File intensityConfFile;
+// // File objects for FS
+// extern File messageFile;
+// extern File scrollSpeedConfFile;
+// extern File intensityConfFile;
 
 #endif

@@ -27,8 +27,8 @@
 #include "main.hpp"
 
 // Matrix display array
-char curMessage[BUF_SIZE] = {""};
-char newMessage[BUF_SIZE] = {""};
+char curMessage[MSG_BUF_SIZE] = {""};
+char newMessage[MSG_BUF_SIZE] = {""};
 
 // New Message Flag
 bool newMessageAvailable = true;
@@ -63,9 +63,9 @@ MD_Parola matrix = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 //MD_Parola matrix = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
 // File objects for FS
-File messageFile;
-File scrollSpeedConfFile;
-File intensityConfFile;
+// File messageFile;
+// File scrollSpeedConfFile;
+// File intensityConfFile;
 
 uint32_t getChipId();
 void wmCallback(WiFiManager *myWiFiManager);
@@ -76,6 +76,7 @@ void messageScroll() {
     if (matrix.displayAnimate() || resetDisplay) {
 
         if (newMessageAvailable) {          // If a new message has been set
+            debugln("New message available"); // Debug message
             resetDisplay = false;           // Clear the resetDisplay flag
             strcpy(curMessage, newMessage); // Copy the newMessage buffer to curMessage
             newMessageAvailable = false;    // Clear the newMessageAvailabe flag
@@ -190,39 +191,40 @@ void setup() {
     String incomingFS; // String object for passing data to and from LittleFS
 
     // Check if message file exists, and if it doesn't then create one
+    File file;
     if (!LittleFS.exists(messagePath)) {
         debugln("No message file exists. Creating one now...");
-        messageFile = LittleFS.open(messagePath, "w");
-        messageFile.print("Hello, World!");
-        messageFile.close();
+        file = LittleFS.open(messagePath, "w");
+        file.print("Hello, World!");
+        file.close();
     }
     // Read message file until it reaches the null terminator character and store contents in the newMessage char array
-    messageFile = LittleFS.open(messagePath, "r");
-    incomingFS = messageFile.readStringUntil('\n');
-    incomingFS.toCharArray(newMessage, BUF_SIZE);
+    file = LittleFS.open(messagePath, "r");
+    incomingFS = file.readStringUntil('\n');
+    incomingFS.toCharArray(newMessage, MSG_BUF_SIZE);
 
     // Check if speed conf file exists, and if it doesn't then create one
     if (!LittleFS.exists(speedConfPath)) {
         // debugln("No speed file exists. Creating one now...");
-        scrollSpeedConfFile = LittleFS.open(speedConfPath, "w");
-        scrollSpeedConfFile.print("50");
-        scrollSpeedConfFile.close();
+        file = LittleFS.open(speedConfPath, "w");
+        file.print("50");
+        file.close();
     }
     // Read speed conf file until it reaches the null terminator character, convert it to an int and store it in the scrollSpeed global variable
-    scrollSpeedConfFile = LittleFS.open(speedConfPath, "r");
-    incomingFS = scrollSpeedConfFile.readStringUntil('\n');
+    file = LittleFS.open(speedConfPath, "r");
+    incomingFS = file.readStringUntil('\n');
     scrollSpeed = incomingFS.toInt();
 
     // Check if intensity conf file exists, and if it doesn't then create one
     if (!LittleFS.exists(intensityConfPath)) {
         // debugln("No intensity file exists. Creating one now...");
-        intensityConfFile = LittleFS.open(intensityConfPath, "w");
-        intensityConfFile.print("7");
-        intensityConfFile.close();
+        file = LittleFS.open(intensityConfPath, "w");
+        file.print("7");
+        file.close();
     }
     // Read intensity conf file until it reaches the null terminator character, convert it to an int and store it in the intensity global variable
-    intensityConfFile = LittleFS.open(intensityConfPath, "r");
-    incomingFS = intensityConfFile.readStringUntil('\n');
+    file = LittleFS.open(intensityConfPath, "r");
+    incomingFS = file.readStringUntil('\n');
     intensity = incomingFS.toInt();
 
     // Set new message flag
