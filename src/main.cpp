@@ -182,7 +182,7 @@ void setup() {
     sprintf(hostnameBuffer, "%S%08X", APNamePrefix, getChipId());
     WiFi.hostname(hostnameBuffer);
 
-    char ipAddress[15]; // Char array to store human readable IP address
+    char ipAddress[16]; // Char array to store human readable IP address
     sprintf(ipAddress, "%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
 
     // Copy IP address to newMessage display buffer so that it is scrolled across the display
