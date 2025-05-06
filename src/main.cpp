@@ -62,11 +62,6 @@ WebServer server(80); // Server on port 80 (default HTTP port) - can change it t
 MD_Parola matrix = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 //MD_Parola matrix = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
-// File objects for FS
-// File messageFile;
-// File scrollSpeedConfFile;
-// File intensityConfFile;
-
 uint32_t getChipId();
 void wmCallback(WiFiManager *myWiFiManager);
 void factoryReset();
