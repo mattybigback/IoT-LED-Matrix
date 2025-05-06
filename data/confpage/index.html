@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>LED Matrix Configuration Page</title>
+</head>
+<body>
+    <h2>Matt's Matrix Display</h2>
+    <h3>Control Panel</h3>
+    <form action=/update>
+        <p>Message to display: <input value="%s" name="messageToScroll" maxlength=%d>
+        <p>LED Brightness: <input value=%d name=intensity min=%d max=%d type=number>
+        <p>Scroll Speed (lower is faster): <input value=%d name=speed min=%d max=%d type=number></p><input value=Submit
+            type=submit>
+    </form>
+</body>
+</html>
