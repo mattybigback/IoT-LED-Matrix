@@ -51,15 +51,15 @@
 #define speedConfPath "/speed.txt"
 
 #define BAUD_RATE 115200
-#define DEBUG 0 // Set to 1 to enable debug messages
+#define DEBUG 1 // Set to 1 to enable debug messages
 
 #if DEBUG == 1
-    #if defined(ARDUINO_ARCH_ESP8266)
-        #define Serial0 Serial
+    #if defined(ALT_SERIAL)
+        #define Serial ALT_SERIAL
     #endif
-    #define debug(x) Serial0.print(x)
-    #define debugln(x) Serial0.println(x)
-    #define debugSetup(x) Serial0.begin(x)
+    #define debug(x) Serial.print(x)
+    #define debugln(x) Serial.println(x)
+    #define debugSetup(x) Serial.begin(x)
 #else
     #define debug(x)
     #define debugln(x)
