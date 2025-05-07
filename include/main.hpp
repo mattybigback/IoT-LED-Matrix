@@ -18,7 +18,6 @@
 #endif
 #include <WiFiManager.h>
 
-
 // Matrix-related libraries
 #include <MD_MAX72xx.h>
 #include <MD_Parola.h>
@@ -36,22 +35,15 @@
 // Set number of MAX72xx chips being used
 #define MAX_DEVICES 4
 
-#if defined(ARDUINO_ARCH_ESP32)
-#define CLK_PIN SCK  // GPIO2
-#define DATA_PIN MOSI // GPIO4
-#define CS_PIN SS   // GPIO5
-#define SOFT_RESET 6
-#elif defined(ARDUINO_ARCH_ESP8266)
-#define CLK_PIN SCK // GPIO14 (D5)   // SCK
-#define DATA_PIN MOSI // GPIO13 (D7) // MOSI  // Data In
-#define CS_PIN SS   // GPIO15 (D8)   // SS
-#define SOFT_RESET 4 // GPIO2 (D4)   // Reset pin for the display
-#endif
 
-#ifdef RGB_BUILTIN
-#undef RGB_BUILTIN
+#define CLK_PIN SCK
+#define DATA_PIN MOSI
+#define CS_PIN SS
+
+
+#if !defined(NEOPIXEL_PIN)
+    #define NEOPIXEL_PIN RGB_BUILTIN
 #endif
-#define RGB_BUILTIN 8
 
 // FS Paths
 #define messagePath "/message.txt"
