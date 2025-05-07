@@ -97,18 +97,18 @@ void startWifiManager() {
     // wifiManager.setAPStaticIPConfig(IPAddress(10, 0, 0, 1), IPAddress(10, 0, 0, 1), IPAddress(255, 0, 0, 0));
     wifiManager.autoConnect(APName);
     #if defined(HAS_NEOPIXEL)
-    neopixelWrite(RGB_BUILTIN,0,20,0);
+    neopixelWrite(NEOPIXEL_PIN,0,20,0);
     #endif
 }
 
 void wmCallback(WiFiManager *myWiFiManager) {
     matrix.print("SETUP");
     #if defined(HAS_NEOPIXEL)
-    neopixelWrite(RGB_BUILTIN, BLUE);
+    neopixelWrite(NEOPIXEL_PIN, BLUE);
     #endif
     if (!digitalRead(SOFT_RESET)) {
         #if defined(HAS_NEOPIXEL)
-        neopixelWrite(RGB_BUILTIN, RED);
+        neopixelWrite(NEOPIXEL_PIN, RED);
         #endif
         factoryReset();
     }
@@ -118,7 +118,7 @@ void wmCallback(WiFiManager *myWiFiManager) {
 void factoryReset() {
     // Holds execution until reset button is released
     #if defined(HAS_NEOPIXEL)
-    neopixelWrite(RGB_BUILTIN, WHITE);
+    neopixelWrite(NEOPIXEL_PIN, WHITE);
     #endif
     while (digitalRead(SOFT_RESET) == LOW) {
         yield(); // Hands execution over to network stack to stop the ESP crashing
@@ -151,7 +151,7 @@ void setup() {
     WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
     debugln("Wifi mode set");
     #if defined(HAS_NEOPIXEL)
-    neopixelWrite(RGB_BUILTIN, YELLOW); // yellow
+    neopixelWrite(NEOPIXEL_PIN, YELLOW); // yellow
     #endif
     delay(250);
     pinMode(SOFT_RESET, INPUT_PULLUP);
@@ -171,7 +171,7 @@ void setup() {
     // Start WiFiManager
     startWifiManager();
     #if defined(HAS_NEOPIXEL)
-    neopixelWrite(RGB_BUILTIN, GREEN); // green
+    neopixelWrite(NEOPIXEL_PIN, GREEN); // green
     #endif
 
     server.on("/", handleRoot);       // Function to call when root page is loaded

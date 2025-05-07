@@ -4,7 +4,7 @@
 void handleRoot() {
     // Turn the LED or NeoPixel orange to indicate action
     #if defined(HAS_NEOPIXEL)
-    neopixelWrite(RGB_BUILTIN, ORANGE); // Orange
+    neopixelWrite(NEOPIXEL_PIN, ORANGE); // Orange
     #endif
     debugln("Web portal index requested");
     // Open file in read mode
@@ -46,7 +46,7 @@ void handleRoot() {
 void handleForm() {
     // visual feedback
     #if defined(HAS_NEOPIXEL)
-    neopixelWrite(RGB_BRIGHTNESS, ORANGE);
+    neopixelWrite(NEOPIXEL_PIN, ORANGE);
     #endif
 
     char intensityBuf[3];
