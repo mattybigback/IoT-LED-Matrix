@@ -176,6 +176,7 @@ void setup() {
 
     server.on("/", handleRoot);       // Function to call when root page is loaded
     server.on("/update", handleForm); // Function to call when form is submitted and update page is loaded
+    server.on("/api", handleAPI);
     server.begin();                   // Start http server
 
     char hostnameBuffer[32];

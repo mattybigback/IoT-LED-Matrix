@@ -4,6 +4,7 @@
 // File system libraries
 #include <FS.h>
 #include <LittleFS.h>
+#include <ArduinoJson.h>
 
 // Network-related libraries
 #include <DNSServer.h>
