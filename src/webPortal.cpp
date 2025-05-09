@@ -114,4 +114,24 @@ void handleForm() {
 
     // Send HTTP response
     server.send(200, "text/html", pageContent);
+    #if defined(HAS_NEOPIXEL)
+    neopixelWrite(NEOPIXEL_PIN, GREEN);
+    #endif
+}
+
+void handleAPI(){
+    JsonDocument settings;      // only ~200 B on the heap
+
+    settings["msg"]      = curMessage;
+    settings["msg_max"]  = MSG_BUF_SIZE-1;
+    settings["intensity"]= intensity;
+    settings["int_min"]  = INTENSITY_MIN;
+    settings["int_max"]  = INTENSITY_MAX;
+    settings["speed"]    = scrollSpeed;
+    settings["spd_min"]  = SCROLL_SPEED_MIN;
+    settings["spd_max"]  = SCROLL_SPEED_MAX;
+  
+    String response;
+    serializeJson(settings, response);
+    server.send(200, "application/json", response);
 }

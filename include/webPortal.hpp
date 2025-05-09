@@ -5,5 +5,6 @@
 
 void handleRoot();
 void handleForm();
+void handleAPI();
 
 #endif

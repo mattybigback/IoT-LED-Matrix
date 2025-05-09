@@ -4,6 +4,7 @@
 // File system libraries
 #include <FS.h>
 #include <LittleFS.h>
+#include <ArduinoJson.h>
 
 // Network-related libraries
 #include <DNSServer.h>
@@ -24,9 +25,13 @@
 #include <SPI.h>
 
 // Web portal
-//#include "webpages/update.h"
 #include "webPortal.hpp"
+
+// Neopixel colour lookup
 #include "colours.hpp"
+
+// Wifi manager functions
+#include "wifiManager.hpp"
 
 // Set the matrix type
 // Read MD_Parola documentation for which option to use for other modules
@@ -35,17 +40,15 @@
 // Set number of MAX72xx chips being used
 #define MAX_DEVICES 4
 
-
 #define CLK_PIN SCK
 #define DATA_PIN MOSI
 #define CS_PIN SS
-
 
 #if !defined(NEOPIXEL_PIN)
     #define NEOPIXEL_PIN RGB_BUILTIN
 #endif
 
-// FS Paths
+// Settings file paths
 #define messagePath "/message.txt"
 #define intensityConfPath "/intens.txt"
 #define speedConfPath "/speed.txt"
@@ -83,6 +86,13 @@
 #define SCROLL_SPEED_MIN 10
 #define SCROLL_SPEED_MAX 200
 
+/*  
+    WiFi AP Name - Should not exceed 24 chracters as 
+    the maximum length for an SSID is 32 characters, 
+    and 8 are used for the board ID
+*/
+#define APNAME_PREFIX "Mattrix"
+
 extern char curMessage[];
 extern char newMessage[];
 
@@ -107,9 +117,10 @@ extern ESP8266WebServer server; // Server on port 80 (default HTTP port) - can c
 #endif
 extern MD_Parola matrix;
 
-// // File objects for FS
-// extern File messageFile;
-// extern File scrollSpeedConfFile;
-// extern File intensityConfFile;
+uint32_t getChipId();
+void factoryReset();
+void messageScroll();
+void setup();
+void loop();
 
 #endif
