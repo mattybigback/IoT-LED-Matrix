@@ -7,7 +7,6 @@
         Wemos D1 - ESP8266
         Generic ESP32-C3 devkit (using Wemos Lolin C3 pin definitions) - ESP32-C3
         
-
     * MAX7219 matrix module (tested with the below modules)
         FC-16 32x8 module
 
@@ -39,9 +38,6 @@ bool resetDisplay = false;
 int intensity = 15;
 int scrollSpeed = 90;
 
-// WiFi AP Name - Should not exceed 24 chracters as the maximum length for an SSID is 32 characters, and 8 are used for the board ID
-const char *APNamePrefix = "Mattrix";
-
 
 // Scrolling effects
 textEffect_t scrollEffect = PA_SCROLL_LEFT;
@@ -64,9 +60,6 @@ ESP8266WebServer server(80);
 MD_Parola matrix = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 //MD_Parola matrix = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
-uint32_t getChipId();
-void wmCallback(WiFiManager *myWiFiManager);
-void factoryReset();
 
 void messageScroll() {
     // If the display is still animating OR the resetDisplay flag has been set
@@ -81,39 +74,13 @@ void messageScroll() {
             matrix.setIntensity(intensity); // Set intensity from global variable
         }
         matrix.displayReset(); // If display has finished animating reset the animation
-    }
-}
-
-
-void startWifiManager() {
-    // Create instance of WiFiManager
-    WiFiManager wifiManager;
-    wifiManager.setAPCallback(wmCallback);
-    // Buffer for AP Name
-    char APName[32];
-    // Puts the APNamePrefix defined in the setup in the APName buffer and then adds the ESP module ID, formatted as 8 characters of Hex (leading zeros added)
-    sprintf(APName, "%S%08X", APNamePrefix, getChipId());
-    // Sets a static IP so that it is easy to connect to while in AP mode
-    // wifiManager.setAPStaticIPConfig(IPAddress(10, 0, 0, 1), IPAddress(10, 0, 0, 1), IPAddress(255, 0, 0, 0));
-    wifiManager.autoConnect(APName);
-    #if defined(HAS_NEOPIXEL)
-    neopixelWrite(NEOPIXEL_PIN,0,20,0);
-    #endif
-}
-
-void wmCallback(WiFiManager *myWiFiManager) {
-    matrix.print("SETUP");
-    #if defined(HAS_NEOPIXEL)
-    neopixelWrite(NEOPIXEL_PIN, BLUE);
-    #endif
-    if (!digitalRead(SOFT_RESET)) {
         #if defined(HAS_NEOPIXEL)
-        neopixelWrite(NEOPIXEL_PIN, RED);
+        neopixelWrite(NEOPIXEL_PIN, GREEN);
         #endif
-        factoryReset();
     }
-
 }
+
+
 
 void factoryReset() {
     // Holds execution until reset button is released
@@ -180,7 +147,7 @@ void setup() {
     server.begin();                   // Start http server
 
     char hostnameBuffer[32];
-    sprintf(hostnameBuffer, "%S%08X", APNamePrefix, getChipId());
+    sprintf(hostnameBuffer, "%S%08X", APNAME_PREFIX, getChipId());
     WiFi.hostname(hostnameBuffer);
 
     char ipAddress[16]; // Char array to store human readable IP address
@@ -237,7 +204,7 @@ void setup() {
         file.print("7");
         file.close();
     }
-    // Read intensity conf file until it reaches the null terminator character, convert it to an int and store it in the intensity global variable
+    // Read intensity conf file, convert it to an int and store it in the intensity global variable
     file = LittleFS.open(intensityConfPath, "r");
     incomingFS = file.readStringUntil('\n');
     intensity = incomingFS.toInt();
@@ -248,13 +215,10 @@ void setup() {
 }
 
 void loop() {
-    // put your main code here, to run repeatedly:
-    #if defined(HAS_NEOPIXEL)
-    neopixelWrite(RGB_BRIGHTNESS, GREEN);
-    #endif
     messageScroll();       // Scroll the message
     server.handleClient(); // Keep web server ticking over
-        if (!digitalRead(SOFT_RESET)) {
+    // Reset if the reset button is pressed
+    if (!digitalRead(SOFT_RESET)) {
         factoryReset();
     }
 }

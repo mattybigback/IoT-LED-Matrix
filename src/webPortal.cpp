@@ -114,6 +114,9 @@ void handleForm() {
 
     // Send HTTP response
     server.send(200, "text/html", pageContent);
+    #if defined(HAS_NEOPIXEL)
+    neopixelWrite(NEOPIXEL_PIN, GREEN);
+    #endif
 }
 
 void handleAPI(){
