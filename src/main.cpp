@@ -6,7 +6,7 @@
     * ESP8266 or ESP32 (tested with the below modules)
         Wemos D1 - ESP8266
         Generic ESP32-C3 devkit (using Wemos Lolin C3 pin definitions) - ESP32-C3
-        
+
     * MAX7219 matrix module (tested with the below modules)
         FC-16 32x8 module
 
@@ -38,7 +38,6 @@ bool resetDisplay = false;
 int intensity = 15;
 int scrollSpeed = 90;
 
-
 // Scrolling effects
 textEffect_t scrollEffect = PA_SCROLL_LEFT;
 textPosition_t scrollAlign = PA_LEFT;
@@ -46,7 +45,7 @@ const int scrollPause = 0; // in milliseconds. Not used by default - holds the s
 
 // Instantiate objects
 #if defined(ARDUINO_ARCH_ESP32)
-WebServer server(80); 
+WebServer server(80);
 #elif defined(ARDUINO_ARCH_ESP8266)
 ESP8266WebServer server(80);
 #endif
@@ -58,58 +57,81 @@ ESP8266WebServer server(80);
 */
 
 MD_Parola matrix = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
-//MD_Parola matrix = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
-
+// MD_Parola matrix = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
 void messageScroll() {
     // If the display is still animating OR the resetDisplay flag has been set
     if (matrix.displayAnimate() || resetDisplay) {
 
-        if (newMessageAvailable) {          // If a new message has been set
+        if (newMessageAvailable) {            // If a new message has been set
             debugln("New message available"); // Debug message
-            resetDisplay = false;           // Clear the resetDisplay flag
-            strcpy(curMessage, newMessage); // Copy the newMessage buffer to curMessage
-            newMessageAvailable = false;    // Clear the newMessageAvailabe flag
-            matrix.setSpeed(scrollSpeed);   // Set scroll speed from global variable
-            matrix.setIntensity(intensity); // Set intensity from global variable
+            resetDisplay = false;             // Clear the resetDisplay flag
+            strcpy(curMessage, newMessage);   // Copy the newMessage buffer to curMessage
+            newMessageAvailable = false;      // Clear the newMessageAvailabe flag
+            matrix.setSpeed(scrollSpeed);     // Set scroll speed from global variable
+            matrix.setIntensity(intensity);   // Set intensity from global variable
         }
         matrix.displayReset(); // If display has finished animating reset the animation
-        #if defined(HAS_NEOPIXEL)
+#if defined(HAS_NEOPIXEL)
         neopixelWrite(NEOPIXEL_PIN, GREEN);
-        #endif
+#endif
     }
 }
 
-
-
 void factoryReset() {
-    // Holds execution until reset button is released
-    #if defined(HAS_NEOPIXEL)
+// Holds execution until reset button is released
+#if defined(HAS_NEOPIXEL)
     neopixelWrite(NEOPIXEL_PIN, WHITE);
-    #endif
+#endif
     while (digitalRead(SOFT_RESET) == LOW) {
         yield(); // Hands execution over to network stack to stop the ESP crashing
     }
-    WiFi.disconnect(false,true); // Disconnect from WiFi and clear credentials
-    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
-    LittleFS.format();     // Wipe the file system
-    matrix.begin();        // Initialise the display
+    WiFi.disconnect(false, true); // Disconnect from WiFi and clear credentials
+    WiFi.mode(WIFI_STA);          // explicitly set mode, esp defaults to STA+AP
+    scrubUserData();              // Wipe user data
+    matrix.begin();               // Initialise the display
     matrix.print("RESET");
     delay(3000);
     ESP.restart(); // System reset
 }
 
 uint32_t getChipId() {
-    
-    #if defined(ARDUINO_ARCH_ESP32)
+
+#if defined(ARDUINO_ARCH_ESP32)
     uint32_t id = 0;
     for (int i = 0; i < 17; i = i + 8) {
         id |= ((ESP.getEfuseMac() >> (40 - i)) & 0xff) << i;
     }
-    #elif defined(ARDUINO_ARCH_ESP8266)
+#elif defined(ARDUINO_ARCH_ESP8266)
     uint32_t id = ESP.getChipId(); // Get the chip ID
-    #endif
+#endif
     return id;
+}
+
+#include <LittleFS.h>
+
+void scrubUserData() {
+    File root = LittleFS.open("/");
+    if (!root)
+        return; // safety check
+
+    File entry;
+    while ((entry = root.openNextFile())) { // iterate over everything in “/”
+        if (!entry.isDirectory()) {
+        #if defined(ARDUINO_ARCH_ESP32)
+            String name = entry.path();
+        #endif
+        #if defined(ARDUINO_ARCH_ESP8266)
+            String name = entry.name();
+        #endif
+            entry.close(); // close the file so that it can be deleted
+            if (name.endsWith(".dat")) { // “*.dat” test
+                debug("Removing ");
+                debugln(name);
+                LittleFS.remove(name); // delete file
+            }
+        }
+    }
 }
 
 void setup() {
@@ -117,9 +139,9 @@ void setup() {
     debugln("Booting...");
     WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
     debugln("Wifi mode set");
-    #if defined(HAS_NEOPIXEL)
+#if defined(HAS_NEOPIXEL)
     neopixelWrite(NEOPIXEL_PIN, YELLOW); // yellow
-    #endif
+#endif
     delay(250);
     pinMode(SOFT_RESET, INPUT_PULLUP);
 
@@ -137,14 +159,14 @@ void setup() {
 
     // Start WiFiManager
     startWifiManager();
-    #if defined(HAS_NEOPIXEL)
+#if defined(HAS_NEOPIXEL)
     neopixelWrite(NEOPIXEL_PIN, GREEN); // green
-    #endif
+#endif
 
     server.on("/", handleRoot);       // Function to call when root page is loaded
     server.on("/update", handleForm); // Function to call when form is submitted and update page is loaded
     server.on("/api", handleAPI);
-    server.begin();                   // Start http server
+    server.begin(); // Start http server
 
     char hostnameBuffer[32];
     sprintf(hostnameBuffer, "%S%08X", APNAME_PREFIX, getChipId());
@@ -166,9 +188,9 @@ void setup() {
     messageScroll();
 
     // Begin LittleFS and check if it successfully mounts FS.
-    if(!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)){
-    debugln("LittleFS Mount Failed");
-    return;
+    if (!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)) {
+        debugln("LittleFS Mount Failed");
+        return;
     }
     String incomingFS; // String object for passing data to and from LittleFS
 

@@ -49,9 +49,9 @@
 #endif
 
 // Settings file paths
-#define messagePath "/message.txt"
-#define intensityConfPath "/intens.txt"
-#define speedConfPath "/speed.txt"
+#define messagePath "/message.dat"
+#define intensityConfPath "/intens.dat"
+#define speedConfPath "/speed.dat"
 
 #define BAUD_RATE 115200
 #define DEBUG 1 // Set to 1 to enable debug messages
@@ -120,6 +120,7 @@ extern MD_Parola matrix;
 uint32_t getChipId();
 void factoryReset();
 void messageScroll();
+void scrubUserData();
 void setup();
 void loop();
 
