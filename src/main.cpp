@@ -1,63 +1,22 @@
-/* WiFi scrolling display by Matt H
-   https://github.com/mattybigback
-
-   Required hardware:
-
-    * ESP8266 or ESP32 (tested with the below modules)
-        Wemos D1 - ESP8266
-        Generic ESP32-C3 devkit (using Wemos Lolin C3 pin definitions) - ESP32-C3
-
-    * MAX7219 matrix module (tested with the below modules)
-        FC-16 32x8 module
-
-   MD_MAX72xx and MD_Parola libraries written and maintainesd by Marco Colli (MajicDesigns)
-   https://github.com/MajicDesigns
-   https://github.com/MajicDesigns/MD_MAX72XX
-   https://github.com/MajicDesigns/MD_Parola
-
-   WiFiMagager written and maintained by tzapu
-   https://github.com/tzapu/WiFiManager
-
-
-   Use this code at your own risk. I know I do.
-*/
 
 #include "main.hpp"
 
-// Matrix display array
 char curMessage[MSG_BUF_SIZE] = {""};
 char newMessage[MSG_BUF_SIZE] = {""};
-
-// New Message Flag
-bool newMessageAvailable = true;
-
-// Reset Display Flag
-bool resetDisplay = false;
-
-// Matrix display properties used on startup to display IP address
-int intensity = 15;
-int scrollSpeed = 90;
-
-// Scrolling effects
-textEffect_t scrollEffect = PA_SCROLL_LEFT;
-textPosition_t scrollAlign = PA_LEFT;
-const int scrollPause = 0; // in milliseconds. Not used by default - holds the screen at the end of the message
-
-// Instantiate objects
+bool newMessageAvailable;
+bool resetDisplay;
+int intensity;
+int scrollSpeed;
+bool displayFlipped;
+textEffect_t scrollEffect; 
+textPosition_t scrollAlign; 
+int scrollPause;          
 #if defined(ARDUINO_ARCH_ESP32)
-WebServer server(80);
+    WebServer server(WEB_SERVER_PORT); // ESP32 web server
 #elif defined(ARDUINO_ARCH_ESP8266)
-ESP8266WebServer server(80);
+    ESP8266WebServer server(WEB_SERVER_PORT); // ESP8266 web server
 #endif
-/*
-   Uncommand the relevant line
-
-   Top line for hardware SPI (ESP-12 etc)
-   Bottom line for software SPI (ESP-01)
-*/
-
-MD_Parola matrix = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
-// MD_Parola matrix = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
+MD_Parola matrix = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX72XX_DEVICE_COUNT); 
 
 void messageScroll() {
     // If the display is still animating OR the resetDisplay flag has been set
@@ -134,6 +93,30 @@ void scrubUserData() {
     }
 }
 
+bool setMatrixOrientation(bool flipDisplay) {
+    matrix.displayClear();
+    matrix.displayReset();
+    matrix.setZoneEffect(0, flipDisplay, PA_FLIP_LR);
+    matrix.setZoneEffect(0, flipDisplay, PA_FLIP_UD);
+
+    // Set the matrix orientation
+    if (flipDisplay) {
+        debugln("Flipping display");
+        scrollEffect = PA_SCROLL_RIGHT;
+        scrollAlign = PA_RIGHT;
+
+    } else {
+        // Set the matrix to the default orientation
+        debugln("Setting display to default orientation");
+        scrollEffect = PA_SCROLL_LEFT;
+        scrollAlign = PA_LEFT;
+
+    }
+
+    matrix.displayText(curMessage, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
+    return flipDisplay;
+}
+
 void setup() {
     debugSetup(BAUD_RATE);
     debugln("Booting...");
@@ -147,6 +130,7 @@ void setup() {
 
     // Begin matrix, set scroll speed and intensity from global variables
     matrix.begin();
+    displayFlipped = setMatrixOrientation(0);
     matrix.setSpeed(scrollSpeed);
     matrix.setIntensity(intensity);
 
@@ -166,6 +150,7 @@ void setup() {
     server.on("/", handleRoot);       // Function to call when root page is loaded
     server.on("/update", handleForm); // Function to call when form is submitted and update page is loaded
     server.on("/api", handleAPI);
+    server.on("/flip", handleFlip); // Function to call when flip page is loaded
     server.begin(); // Start http server
 
     char hostnameBuffer[32];
@@ -181,6 +166,7 @@ void setup() {
     matrix.displayClear();
     // Set up text scroll animation
     matrix.displayText(curMessage, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
+
     // Set newMessageAvailable and resetDisplay flags
     newMessageAvailable = true;
     resetDisplay = true;

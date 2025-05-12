@@ -1,3 +1,27 @@
+/* WiFi scrolling display by Matt H
+   https://github.com/mattybigback
+
+   Required hardware:
+
+    * ESP8266 or ESP32 (tested with the below modules)
+        Wemos D1 - ESP8266
+        Generic ESP32-C3 devkit (using Wemos Lolin C3 pin definitions) - ESP32-C3
+
+    * MAX7219 matrix module (tested with the below modules)
+        FC-16 32x8 module
+
+   MD_MAX72xx and MD_Parola libraries written and maintainesd by Marco Colli (MajicDesigns)
+   https://github.com/MajicDesigns
+   https://github.com/MajicDesigns/MD_MAX72XX
+   https://github.com/MajicDesigns/MD_Parola
+
+   WiFiMagager written and maintained by tzapu
+   https://github.com/tzapu/WiFiManager
+
+
+   Use this code at your own risk. I know I do.
+*/
+
 #ifndef MAIN_H
 #define MAIN_H
 
@@ -24,63 +48,66 @@
 #include <MD_Parola.h>
 #include <SPI.h>
 
-// Web portal
-#include "webPortal.hpp"
+/* --  Project headers  -- */
 
-// Neopixel colour lookup
-#include "colours.hpp"
+#include "webPortal.hpp"    // Web portal functions
+#include "colours.hpp"      // Neopixel colour lookup
+#include "wifiManager.hpp"  // Wifi manager functions
 
-// Wifi manager functions
-#include "wifiManager.hpp"
-
-// Set the matrix type
+/* --  Matrix hardware type  -- */
 // Read MD_Parola documentation for which option to use for other modules
-#define HARDWARE_TYPE MD_MAX72XX::FC16_HW
+#define HARDWARE_TYPE MD_MAX72XX::FC16_HW   // MD_MAX72XX::FC16_HW for FC-16 32x8 module
+#define MAX72XX_DEVICE_COUNT 4              // Number of MAX7219 devices in the chain
 
-// Set number of MAX72xx chips being used
-#define MAX_DEVICES 4
+/* --  SPI pins  -- */
+#define CLK_PIN SCK     // SPI clock pin
+#define DATA_PIN MOSI   // SPI data out pin
+#define CS_PIN SS       // SPI chip select pin
 
-#define CLK_PIN SCK
-#define DATA_PIN MOSI
-#define CS_PIN SS
+#define WEB_SERVER_PORT 80          // Web server port
 
+// Set the platformio env does not specify NEOPIXEL_PIN then use RGB_BUILTIN (Defined by the board definition)
 #if !defined(NEOPIXEL_PIN)
     #define NEOPIXEL_PIN RGB_BUILTIN
 #endif
 
-// Settings file paths
+/* --  Settings file paths  -- */
 #define messagePath "/message.dat"
 #define intensityConfPath "/intens.dat"
 #define speedConfPath "/speed.dat"
 
+/* --  Serial debugging macro definitions  -- */
 #define BAUD_RATE 115200
 #define DEBUG 1 // Set to 1 to enable debug messages
-
-#if DEBUG == 1
-    #if defined(ALT_SERIAL)
-        #define Serial ALT_SERIAL
+#if DEBUG == 1                      // If DEBUG is set to 1 then enable debug macros
+    #if defined(ALT_SERIAL)         // If ALT_SERIAL is defined then use that for debugging
+        #define debug(x) ALT_SERIAL.print(x)
+        #define debugln(x) ALT_SERIAL.println(x)
+        #define debugSetup(x) ALT_SERIAL.begin(x)
+    #else                           // Otherwise use Serial for debugging
+        #define debug(x) Serial.print(x)
+        #define debugln(x) Serial.println(x)
+        #define debugSetup(x) Serial.begin(x)
     #endif
-    #define debug(x) Serial.print(x)
-    #define debugln(x) Serial.println(x)
-    #define debugSetup(x) Serial.begin(x)
-#else
+#else                               // If DEBUG is set to 0 then disable debug macros
     #define debug(x)
     #define debugln(x)
     #define debugSetup(x)
 #endif
 
+/* --  LittleFS initialisaton macros  -- */
 #if defined(ARDUINO_ARCH_ESP32)
-#define FORMAT_LITTLEFS_IF_FAILED true
+    #define FORMAT_LITTLEFS_IF_FAILED true  // Format the filesystem if it fails to mount//
 #elif defined(ARDUINO_ARCH_ESP8266)
-#define FORMAT_LITTLEFS_IF_FAILED
+    #define FORMAT_LITTLEFS_IF_FAILED       // Not supported on ESP8266
 #endif
 
 
-// Matrix display array
-#define MSG_BUF_SIZE 501 // Be careful here.
-// If you increase the buffer over 500 then you must
-// also increase the size of PAGE_BUF_SIZE.
+/* --  Text buffer sizes  -- */
+#define MSG_BUF_SIZE 501 // 500 characters for the message buffer including the null terminator
 #define PAGE_BUF_SIZE 2048 // 2kB for the HTML page buffer
+
+/* --  Matrix parameter limits  -- */
 #define INTENSITY_MIN 0
 #define INTENSITY_MAX 15
 #define SCROLL_SPEED_MIN 10
@@ -91,36 +118,50 @@
     the maximum length for an SSID is 32 characters, 
     and 8 are used for the board ID
 */
-#define APNAME_PREFIX "Mattrix"
+#define APNAME_PREFIX "ESP32-"
+static_assert(
+    sizeof(APNAME_PREFIX) - 1 <= 8,
+    "APNAME_PREFIX exceeds the maximum allowed length of 24 characters."
+);
 
-extern char curMessage[];
-extern char newMessage[];
+// Matrix display arrays
+extern char curMessage[MSG_BUF_SIZE];   // Current message to be displayed
+extern char newMessage[MSG_BUF_SIZE];   // New message to be displayed
 
-// New Message Flag
-extern bool newMessageAvailable;
-
+/* --  Status flags  -- */
+extern bool newMessageAvailable;    // true if a new message is available
 // Reset Display Flag
-extern bool resetDisplay;
+extern bool resetDisplay;           // true if the display needs to be reset
 
-// Matrix display properties used on startup to display IP address
+/* --  Matrix display properties  -- */
 extern int intensity;
 extern int scrollSpeed;
+extern bool displayFlipped;
 
-extern textEffect_t scrollEffect;
-extern textPosition_t scrollAlign;
+/* --  Parola scrolling effects  -- */
+extern textEffect_t scrollEffect;   // PA_SCROLL_LEFT, PA_SCROLL_RIGHT
+extern textPosition_t scrollAlign;  // PA_LEFT, PA_RIGHT
+extern int scrollPause;             // in milliseconds. Not used by default - holds the screen at the end of the message
 
-// Instantiate objects
+
+/* --  Instantiate objects  -- */
+// Instantiate the web server object depending on the platform
 #if defined(ARDUINO_ARCH_ESP32)
-extern WebServer server; // Server on port 80 (default HTTP port) - can change it to a different port if need be.
+    extern WebServer server; // ESP32 web server
 #elif defined(ARDUINO_ARCH_ESP8266)
-extern ESP8266WebServer server; // Server on port 80 (default HTTP port) - can change it to a different port if need be.
+    extern ESP8266WebServer server; // ESP8266 web server
 #endif
-extern MD_Parola matrix;
+
+//Instantiate the matrix object
+extern MD_Parola matrix; 
+
+/* --  Function definitions  -- */
 
 uint32_t getChipId();
 void factoryReset();
 void messageScroll();
 void scrubUserData();
+bool setMatrixOrientation(bool flipDisplay);
 void setup();
 void loop();
 
