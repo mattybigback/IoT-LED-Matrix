@@ -106,6 +106,7 @@ extern bool resetDisplay;
 extern int intensity;
 extern int scrollSpeed;
 
+extern bool displayFlipped;
 extern textEffect_t scrollEffect;
 extern textPosition_t scrollAlign;
 
@@ -121,6 +122,7 @@ uint32_t getChipId();
 void factoryReset();
 void messageScroll();
 void scrubUserData();
+bool setMatrixOrientation(bool flipDisplay);
 void setup();
 void loop();
 

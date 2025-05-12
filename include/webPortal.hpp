@@ -6,5 +6,6 @@
 void handleRoot();
 void handleForm();
 void handleAPI();
+void handleFlip();
 
 #endif

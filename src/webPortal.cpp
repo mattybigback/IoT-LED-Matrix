@@ -135,3 +135,15 @@ void handleAPI(){
     serializeJson(settings, response);
     server.send(200, "application/json", response);
 }
+
+void handleFlip() {
+    // Turn the LED or NeoPixel orange to indicate action
+    #if defined(HAS_NEOPIXEL)
+    neopixelWrite(NEOPIXEL_PIN, ORANGE); // Orange
+    #endif
+    debugln("Web portal flip requested");
+    displayFlipped = setMatrixOrientation(!displayFlipped);
+    char pageContent[64];
+    snprintf(pageContent, sizeof(pageContent), "Display flipped: %s", displayFlipped ? "true" : "false");
+    server.send(200, "text/html", pageContent);
+}

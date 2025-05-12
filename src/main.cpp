@@ -39,9 +39,11 @@ int intensity = 15;
 int scrollSpeed = 90;
 
 // Scrolling effects
-textEffect_t scrollEffect = PA_SCROLL_LEFT;
-textPosition_t scrollAlign = PA_LEFT;
+bool displayFlipped; // Rotate display 180 degrees
+textEffect_t scrollEffect; // PA_SCROLL_LEFT, PA_SCROLL_RIGHT
+textPosition_t scrollAlign; // PA_LEFT, PA_RIGHT
 const int scrollPause = 0; // in milliseconds. Not used by default - holds the screen at the end of the message
+
 
 // Instantiate objects
 #if defined(ARDUINO_ARCH_ESP32)
@@ -134,6 +136,30 @@ void scrubUserData() {
     }
 }
 
+bool setMatrixOrientation(bool flipDisplay) {
+    matrix.displayClear();
+    matrix.displayReset();
+    matrix.setZoneEffect(0, flipDisplay, PA_FLIP_LR);
+    matrix.setZoneEffect(0, flipDisplay, PA_FLIP_UD);
+
+    // Set the matrix orientation
+    if (flipDisplay) {
+        debugln("Flipping display");
+        scrollEffect = PA_SCROLL_RIGHT;
+        scrollAlign = PA_RIGHT;
+
+    } else {
+        // Set the matrix to the default orientation
+        debugln("Setting display to default orientation");
+        scrollEffect = PA_SCROLL_LEFT;
+        scrollAlign = PA_LEFT;
+
+    }
+
+    matrix.displayText(curMessage, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
+    return flipDisplay;
+}
+
 void setup() {
     debugSetup(BAUD_RATE);
     debugln("Booting...");
@@ -147,6 +173,7 @@ void setup() {
 
     // Begin matrix, set scroll speed and intensity from global variables
     matrix.begin();
+    displayFlipped = setMatrixOrientation(0);
     matrix.setSpeed(scrollSpeed);
     matrix.setIntensity(intensity);
 
@@ -166,6 +193,7 @@ void setup() {
     server.on("/", handleRoot);       // Function to call when root page is loaded
     server.on("/update", handleForm); // Function to call when form is submitted and update page is loaded
     server.on("/api", handleAPI);
+    server.on("/flip", handleFlip); // Function to call when flip page is loaded
     server.begin(); // Start http server
 
     char hostnameBuffer[32];
@@ -181,6 +209,7 @@ void setup() {
     matrix.displayClear();
     // Set up text scroll animation
     matrix.displayText(curMessage, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
+
     // Set newMessageAvailable and resetDisplay flags
     newMessageAvailable = true;
     resetDisplay = true;
