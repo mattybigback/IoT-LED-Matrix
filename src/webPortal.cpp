@@ -2,16 +2,16 @@
 
 // Server response to a request for root page
 void handleRoot() {
-    // Turn the LED or NeoPixel orange to indicate action
-    #if defined(HAS_NEOPIXEL)
+// Turn the LED or NeoPixel orange to indicate action
+#if defined(HAS_NEOPIXEL)
     neopixelWrite(NEOPIXEL_PIN, ORANGE); // Orange
-    #endif
+#endif
     debugln("Web portal index requested");
     // Open file in read mode
     File webpage = LittleFS.open("/confpage/index.html", "r");
     if (!webpage) {
-      server.send(404, "text/plain", "Not found");
-      return;
+        server.send(404, "text/plain", "Not found");
+        return;
     }
     String pageContent = webpage.readString();
     webpage.close();
@@ -24,7 +24,7 @@ void handleRoot() {
         PAGE_BUF_SIZE,       // max page size (incl. NUL)
         pageContent.c_str(), // HTML template
         curMessage,          // %s → current message
-        MSG_BUF_SIZE-1,      // %d → max message length
+        MSG_BUF_SIZE - 1,    // %d → max message length
         intensity,           // %d → intensity value
         INTENSITY_MIN,       // %d → min intensity value
         INTENSITY_MAX,       // %d → max intensity value
@@ -44,10 +44,10 @@ void handleRoot() {
 
 // Server response to incoming data from form
 void handleForm() {
-    // visual feedback
-    #if defined(HAS_NEOPIXEL)
+// visual feedback
+#if defined(HAS_NEOPIXEL)
     neopixelWrite(NEOPIXEL_PIN, ORANGE);
-    #endif
+#endif
 
     char intensityBuf[3];
     char speedBuf[4];
@@ -55,13 +55,12 @@ void handleForm() {
     // Open file in read mode
     File webpage = LittleFS.open("/confpage/update.html", "r");
     if (!webpage) {
-      server.send(404, "text/plain", "Not found");
-      return;
+        server.send(404, "text/plain", "Not found");
+        return;
     }
     String pageContent = webpage.readString();
     webpage.close();
     debugln("File loaded succesfully");
-
 
     // Read and convert in one go—no named String variables
     server.arg("messageToScroll").toCharArray(newMessage, MSG_BUF_SIZE);
@@ -114,33 +113,161 @@ void handleForm() {
 
     // Send HTTP response
     server.send(200, "text/html", pageContent);
-    #if defined(HAS_NEOPIXEL)
+#if defined(HAS_NEOPIXEL)
     neopixelWrite(NEOPIXEL_PIN, GREEN);
-    #endif
+#endif
 }
 
-void handleAPI(){
-    JsonDocument settings;      // only ~200 B on the heap
+void handleAPI() {
+    if (server.method() == HTTP_PUT) {
+        bool messageChanged = false;
+        bool intensityChanged = false;
+        bool speedChanged = false;
+        bool displayFlippedChanged = false;
+        // Turn the LED or NeoPixel orange to indicate action
+        #if defined(HAS_NEOPIXEL)
+            neopixelWrite(NEOPIXEL_PIN, ORANGE); // Orange
+        #endif
+        if (!server.hasArg("plain")) {
+            server.send(400, "application/json",
+                        "{\"errors\":{\"body\":\"Missing JSON body\"}}");
+            return;
+        }
+        // 1) parse into JsonDocument
+        JsonDocument reqDoc;
+        JsonObject reqObj = reqDoc.to<JsonObject>();
+        DeserializationError err = deserializeJson(reqDoc, server.arg("plain"));
+        if (err) {
+            server.send(400, "application/json",
+                        "{\"errors\":{\"json\":\"Invalid JSON\"}}");
+            return;
+        }
 
-    settings["msg"]      = curMessage;
-    settings["msg_max"]  = MSG_BUF_SIZE-1;
-    settings["intensity"]= intensity;
-    settings["int_min"]  = INTENSITY_MIN;
-    settings["int_max"]  = INTENSITY_MAX;
-    settings["speed"]    = scrollSpeed;
-    settings["spd_min"]  = SCROLL_SPEED_MIN;
-    settings["spd_max"]  = SCROLL_SPEED_MAX;
-  
-    String response;
-    serializeJson(settings, response);
-    server.send(200, "application/json", response);
+        // 2) collect validation errors
+        JsonDocument errDoc;
+        JsonObject rootErr = errDoc.to<JsonObject>();           // to<JsonObject>() creates the root object
+        JsonObject errors = rootErr["errors"].to<JsonObject>(); // nested “errors” object
+
+        JsonVariant messageVariant = reqDoc["message"];
+        if (!messageVariant.isNull()) {
+            debugln("Message received");
+            if (!messageVariant.is<String>()) {
+                debugln("Message not a string");
+                errors["message"] = "Value must be a string";
+            } else {
+                debugln("Message is a string");
+            }
+            size_t messageLength = messageVariant.as<String>().length();
+            if (messageLength > MSG_BUF_SIZE - 1) {
+                debugln("Message too long");
+                char errBuf[50];
+                snprintf(errBuf, sizeof(errBuf), "Too long (%d). Max allowed length is %d", messageLength, MSG_BUF_SIZE - 1);
+                errors["message"] = errBuf;
+            }
+            messageChanged = true;
+        }
+        JsonVariant intensityVariant = reqDoc["intensity"];
+        if (!reqDoc["intensity"].isNull()) {
+            debugln("Intensity received");
+            if (!intensityVariant.is<int>()) {
+                debugln("Intensity not an int");
+                errors["intensity"] = "Value must be an integer";
+            } else {
+                int intensityValue = reqDoc["intensity"];
+                if (intensityValue < INTENSITY_MIN || intensityValue > INTENSITY_MAX) {
+                    debugln("Intensity out of range");
+                    char errBuf[76];
+                    snprintf(errBuf, sizeof(errBuf), "Value (%d) out of range. Must be be between %d and %d (inclusive)", intensityValue, INTENSITY_MIN, INTENSITY_MAX);
+                    errors["intensity"] = errBuf;
+                }
+            }
+            intensityChanged = true;
+        }
+        JsonVariant speedVariant = reqDoc["speed"];
+        if (!speedVariant.isNull()) {
+            debugln("Speed received");
+            if (!speedVariant.is<int>()) {
+                debugln("Speed not an int");
+                errors["speed"] = "Value must be an integer";
+            } else {
+                int speedValue = reqDoc["speed"];
+                if (speedValue < SCROLL_SPEED_MIN || speedValue > SCROLL_SPEED_MAX) {
+                    debugln("Speed out of range");
+                    char errBuf[76];
+                    snprintf(errBuf, sizeof(errBuf), "Value (%d) out of range. Must be be between %d and %d (inclusive)", speedValue, SCROLL_SPEED_MIN, SCROLL_SPEED_MAX);
+                    errors["speed"] = errBuf;
+                }
+            }
+            speedChanged = true;
+        }
+        JsonVariant flipVariant = reqDoc["display_flipped"];
+        if (!flipVariant.isNull()) {
+            debugln("Display flipped received");
+            if (!reqDoc["display_flipped"].is<bool>()) {
+                debugln("Display flipped not a bool");
+                errors["display_flipped"] = "Must be true or false";
+            }
+            displayFlippedChanged = true;
+        }
+
+        // 3) if any errors → 400 + details
+        if (errors.size() > 0) {
+            debugln("Errors found");
+            String errJson;
+            debug("Errors: ");
+            serializeJson(errDoc, errJson);
+            debugln(errJson);
+            server.send(400, "application/json", errJson);
+            return;
+        }
+
+        if (messageChanged) {
+            debug("Message: ");
+            debugln(messageVariant.as<const char *>());
+        }
+        if (intensityChanged) {
+            debug("Intensity: ");
+            debugln(intensityVariant.as<int>());
+        }
+        if (speedChanged) {
+            debug("Speed: ");
+            debugln(speedVariant.as<int>());
+        }
+        if (displayFlippedChanged) {
+            debug("Display flipped: ");
+            debugln(flipVariant.as<bool>());
+        }
+        return;
+    }
+
+    if (server.method() == HTTP_GET) {
+
+        JsonDocument settings;
+
+        settings["message"] = curMessage;
+        settings["message_max_len"] = MSG_BUF_SIZE - 1;
+        settings["intensity"] = intensity;
+        settings["intensity_min"] = INTENSITY_MIN;
+        settings["intensity_max"] = INTENSITY_MAX;
+        settings["speed"] = scrollSpeed;
+        settings["speed_min"] = SCROLL_SPEED_MIN;
+        settings["speed_max"] = SCROLL_SPEED_MAX;
+        settings["display_flipped"] = displayFlipped;
+
+        String response;
+        serializeJson(settings, response);
+        server.send(200, "application/json", response);
+        return;
+    }
+    server.send(405, "application/json",
+                "{\"errors\":{\"method\":\"Method not allowed\"}}");
 }
 
 void handleFlip() {
-    // Turn the LED or NeoPixel orange to indicate action
-    #if defined(HAS_NEOPIXEL)
+// Turn the LED or NeoPixel orange to indicate action
+#if defined(HAS_NEOPIXEL)
     neopixelWrite(NEOPIXEL_PIN, ORANGE); // Orange
-    #endif
+#endif
     debugln("Web portal flip requested");
     displayFlipped = setMatrixOrientation(!displayFlipped);
     char pageContent[64];

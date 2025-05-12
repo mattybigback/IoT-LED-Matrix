@@ -1,65 +1,22 @@
-/* WiFi scrolling display by Matt H
-   https://github.com/mattybigback
-
-   Required hardware:
-
-    * ESP8266 or ESP32 (tested with the below modules)
-        Wemos D1 - ESP8266
-        Generic ESP32-C3 devkit (using Wemos Lolin C3 pin definitions) - ESP32-C3
-
-    * MAX7219 matrix module (tested with the below modules)
-        FC-16 32x8 module
-
-   MD_MAX72xx and MD_Parola libraries written and maintainesd by Marco Colli (MajicDesigns)
-   https://github.com/MajicDesigns
-   https://github.com/MajicDesigns/MD_MAX72XX
-   https://github.com/MajicDesigns/MD_Parola
-
-   WiFiMagager written and maintained by tzapu
-   https://github.com/tzapu/WiFiManager
-
-
-   Use this code at your own risk. I know I do.
-*/
 
 #include "main.hpp"
 
-// Matrix display array
 char curMessage[MSG_BUF_SIZE] = {""};
 char newMessage[MSG_BUF_SIZE] = {""};
-
-// New Message Flag
-bool newMessageAvailable = true;
-
-// Reset Display Flag
-bool resetDisplay = false;
-
-// Matrix display properties used on startup to display IP address
-int intensity = 15;
-int scrollSpeed = 90;
-
-// Scrolling effects
-bool displayFlipped; // Rotate display 180 degrees
-textEffect_t scrollEffect; // PA_SCROLL_LEFT, PA_SCROLL_RIGHT
-textPosition_t scrollAlign; // PA_LEFT, PA_RIGHT
-const int scrollPause = 0; // in milliseconds. Not used by default - holds the screen at the end of the message
-
-
-// Instantiate objects
+bool newMessageAvailable;
+bool resetDisplay;
+int intensity;
+int scrollSpeed;
+bool displayFlipped;
+textEffect_t scrollEffect; 
+textPosition_t scrollAlign; 
+int scrollPause;          
 #if defined(ARDUINO_ARCH_ESP32)
-WebServer server(80);
+    WebServer server(WEB_SERVER_PORT); // ESP32 web server
 #elif defined(ARDUINO_ARCH_ESP8266)
-ESP8266WebServer server(80);
+    ESP8266WebServer server(WEB_SERVER_PORT); // ESP8266 web server
 #endif
-/*
-   Uncommand the relevant line
-
-   Top line for hardware SPI (ESP-12 etc)
-   Bottom line for software SPI (ESP-01)
-*/
-
-MD_Parola matrix = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
-// MD_Parola matrix = MD_Parola(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
+MD_Parola matrix = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX72XX_DEVICE_COUNT); 
 
 void messageScroll() {
     // If the display is still animating OR the resetDisplay flag has been set
