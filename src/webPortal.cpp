@@ -120,22 +120,25 @@ void handleForm() {
 
 void handleAPI() {
     if (server.method() == HTTP_PUT) {
+        // Bool flags to track if the parameters have changed
         bool messageChanged = false;
         bool intensityChanged = false;
         bool speedChanged = false;
         bool displayFlippedChanged = false;
+
         // Turn the LED or NeoPixel orange to indicate action
         #if defined(HAS_NEOPIXEL)
             neopixelWrite(NEOPIXEL_PIN, ORANGE); // Orange
         #endif
+
         if (!server.hasArg("plain")) {
             server.send(400, "application/json",
                         "{\"errors\":{\"body\":\"Missing JSON body\"}}");
             return;
         }
-        // 1) parse into JsonDocument
+        // Parse http header into JsonDocument
         JsonDocument reqDoc;
-        JsonObject reqObj = reqDoc.to<JsonObject>();
+        // JsonObject reqObj = reqDoc.to<JsonObject>();
         DeserializationError err = deserializeJson(reqDoc, server.arg("plain"));
         if (err) {
             server.send(400, "application/json",
@@ -143,7 +146,7 @@ void handleAPI() {
             return;
         }
 
-        // 2) collect validation errors
+        // JSON document for logging validation errors
         JsonDocument errDoc;
         JsonObject rootErr = errDoc.to<JsonObject>();           // to<JsonObject>() creates the root object
         JsonObject errors = rootErr["errors"].to<JsonObject>(); // nested “errors” object
@@ -210,7 +213,7 @@ void handleAPI() {
             displayFlippedChanged = true;
         }
 
-        // 3) if any errors → 400 + details
+        // If errors are found, send a 400 response with the errors and return
         if (errors.size() > 0) {
             debugln("Errors found");
             String errJson;
@@ -220,24 +223,52 @@ void handleAPI() {
             server.send(400, "application/json", errJson);
             return;
         }
-
         if (messageChanged) {
             debug("Message: ");
             debugln(messageVariant.as<const char *>());
+            newMessageAvailable = true;
+            snprintf(newMessage, MSG_BUF_SIZE, "%s", messageVariant.as<const char *>());
+            debugln ("New message copied into buffer");
+            LittleFS.open(messagePath, "w").print(newMessage);
+
         }
         if (intensityChanged) {
             debug("Intensity: ");
             debugln(intensityVariant.as<int>());
+            intensity = intensityVariant.as<int>();
+            LittleFS.open(intensityConfPath, "w").print(intensity);
+            displaySettingsChanged = true;
         }
         if (speedChanged) {
             debug("Speed: ");
             debugln(speedVariant.as<int>());
+            scrollSpeed = speedVariant.as<int>();
+            LittleFS.open(speedConfPath, "w").print(scrollSpeed);
+            displaySettingsChanged = true;
         }
         if (displayFlippedChanged) {
             debug("Display flipped: ");
             debugln(flipVariant.as<bool>());
+            displayFlipped = flipVariant.as<bool>();
+            LittleFS.open(flipConfPath, "w").print(displayFlipped);
+            displaySettingsChanged = true;
         }
-        return;
+            
+    // Reset display if new message or settings have changed
+    if (newMessageAvailable || displaySettingsChanged) {
+        matrix.displayClear();
+        matrix.displayReset();
+        resetDisplay = true;
+    }
+
+    // Send HTTP response
+    String response;
+    serializeJson(reqDoc, response);
+    server.send(200, "application/json", response);
+    #if defined(HAS_NEOPIXEL)
+        neopixelWrite(NEOPIXEL_PIN, GREEN);
+    #endif    
+    return;
     }
 
     if (server.method() == HTTP_GET) {

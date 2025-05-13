@@ -75,6 +75,7 @@
 #define messagePath "/message.dat"
 #define intensityConfPath "/intens.dat"
 #define speedConfPath "/speed.dat"
+#define flipConfPath "/flip.dat"
 
 /* --  Serial debugging macro definitions  -- */
 #define BAUD_RATE 115200
@@ -130,6 +131,7 @@ extern char newMessage[MSG_BUF_SIZE];   // New message to be displayed
 
 /* --  Status flags  -- */
 extern bool newMessageAvailable;    // true if a new message is available
+extern bool displaySettingsChanged;   // true if the display settings have changed
 // Reset Display Flag
 extern bool resetDisplay;           // true if the display needs to be reset
 

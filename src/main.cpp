@@ -4,9 +4,10 @@
 char curMessage[MSG_BUF_SIZE] = {""};
 char newMessage[MSG_BUF_SIZE] = {""};
 bool newMessageAvailable;
+bool displaySettingsChanged;
 bool resetDisplay;
-int intensity;
-int scrollSpeed;
+int intensity = 15;
+int scrollSpeed = 30;
 bool displayFlipped;
 textEffect_t scrollEffect; 
 textPosition_t scrollAlign; 
@@ -25,15 +26,28 @@ void messageScroll() {
         if (newMessageAvailable) {            // If a new message has been set
             debugln("New message available"); // Debug message
             resetDisplay = false;             // Clear the resetDisplay flag
-            strcpy(curMessage, newMessage);   // Copy the newMessage buffer to curMessage
+            snprintf(curMessage, MSG_BUF_SIZE, "%s", newMessage); // Copy the newMessage buffer to curMessage
             newMessageAvailable = false;      // Clear the newMessageAvailabe flag
-            matrix.setSpeed(scrollSpeed);     // Set scroll speed from global variable
-            matrix.setIntensity(intensity);   // Set intensity from global variable
+
+        }
+        if (displaySettingsChanged) { // If the display settings have changed
+            debugln("Display settings changed"); // Debug message
+            resetDisplay = false;             // Clear the resetDisplay flag
+            matrix.setSpeed(scrollSpeed);        // Set the scroll speed
+            debug("Scroll speed: ");
+            debugln(scrollSpeed);               // Debug message
+            matrix.setIntensity(intensity);      // Set the intensity
+            debug("Intensity: ");
+            debugln(intensity);                 // Debug message
+            setMatrixOrientation(displayFlipped); // Set the display orientation
+            debug("Display flipped: ");
+            debugln(displayFlipped);           // Debug message
+            displaySettingsChanged = false;      // Clear the displaySettingsChanged flag
         }
         matrix.displayReset(); // If display has finished animating reset the animation
-#if defined(HAS_NEOPIXEL)
-        neopixelWrite(NEOPIXEL_PIN, GREEN);
-#endif
+        #if defined(HAS_NEOPIXEL)
+            neopixelWrite(NEOPIXEL_PIN, GREEN);
+        #endif
     }
 }
 
@@ -95,7 +109,7 @@ void scrubUserData() {
 
 bool setMatrixOrientation(bool flipDisplay) {
     matrix.displayClear();
-    matrix.displayReset();
+    //matrix.displayReset();
     matrix.setZoneEffect(0, flipDisplay, PA_FLIP_LR);
     matrix.setZoneEffect(0, flipDisplay, PA_FLIP_UD);
 
@@ -169,6 +183,7 @@ void setup() {
 
     // Set newMessageAvailable and resetDisplay flags
     newMessageAvailable = true;
+    displaySettingsChanged = true;
     resetDisplay = true;
     // Trigger scroll animation
     messageScroll();
@@ -217,9 +232,25 @@ void setup() {
     incomingFS = file.readStringUntil('\n');
     intensity = incomingFS.toInt();
 
+    if (!LittleFS.exists(flipConfPath)) {
+        // debugln("No flip file exists. Creating one now...");
+        file = LittleFS.open(flipConfPath, "w");
+        file.print("0");
+        file.close();
+    }
+    // Read flip conf file, convert it to a bool and store it in the displayFlipped global variable
+    file = LittleFS.open(flipConfPath, "r");
+    incomingFS = file.readStringUntil('\n');
+    if (incomingFS == "1") {
+        displayFlipped = true;
+    } else {
+        displayFlipped = false;
+    }
+
     // Set new message flag
     // By not also setting the displayReset flag the first message can continue to scroll
     newMessageAvailable = true;
+    displaySettingsChanged = true;
 }
 
 void loop() {
