@@ -130,6 +130,7 @@ bool setMatrixOrientation(bool flipDisplay) {
     matrix.displayText(curMessage, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
     return flipDisplay;
 }
+#if DEBUG==1
 void memoryUsage() {
     // Print the free heap memory
     debug("Free heap: ");
@@ -140,6 +141,7 @@ void memoryUsage() {
     debugln((unsigned)uxTaskGetStackHighWaterMark(NULL) * sizeof(StackType_t));
 
 }
+#endif
 
 void setup() {
     debugSetup(BAUD_RATE);
