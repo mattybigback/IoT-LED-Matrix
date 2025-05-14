@@ -130,6 +130,16 @@ bool setMatrixOrientation(bool flipDisplay) {
     matrix.displayText(curMessage, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
     return flipDisplay;
 }
+void memoryUsage() {
+    // Print the free heap memory
+    debug("Free heap: ");
+    debugln(ESP.getFreeHeap());
+    debug("Largest free block: ");
+    debugln((unsigned long)heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL));
+    debug("Stack Highwater: ");
+    debugln((unsigned)uxTaskGetStackHighWaterMark(NULL) * sizeof(StackType_t));
+
+}
 
 void setup() {
     debugSetup(BAUD_RATE);
@@ -229,8 +239,8 @@ void setup() {
     #endif
 
     server.on("/", handleRoot);       // Function to call when root page is loaded
-    server.on("/update", handleForm); // Function to call when form is submitted and update page is loaded
-    server.on("/api", handleAPI);
+    server.on("/update", handleUpdate); // Function to call when form is submitted and update page is loaded
+    server.on("/api/message", handleAPI);
     server.on("/flip", handleFlip); // Function to call when flip page is loaded
     server.begin(); // Start http server
 
@@ -253,15 +263,23 @@ void setup() {
     file = LittleFS.open(messagePath, "r");
     incomingFS = file.readStringUntil('\n');
     incomingFS.toCharArray(newMessage, MSG_BUF_SIZE);
-    // Set newMessageAvailable and resetDisplay flags
+    // Set flags to notify that a new message is available and that the display settings have changed
+    // This is done so that the display will reset and scroll the new message when the IP address is finished scrolling
     newMessageAvailable = true;
     displaySettingsChanged = true;
-    // resetDisplay = true;
     
 }
 
 
 void loop() {
+#if DEBUG==1
+    static unsigned long lastMemoryUsageTime = 0; // Tracks the last time memoryUsage() was called
+    unsigned long currentMillis = millis();      // Get the current time
+    if (currentMillis - lastMemoryUsageTime >= 10000) { // If 60 seconds have passed
+        memoryUsage(); // Call memoryUsage() function
+        lastMemoryUsageTime = currentMillis; // Update the last time memoryUsage() was called
+    }
+#endif
     messageScroll();       // Scroll the message
     server.handleClient(); // Keep web server ticking over
     // Reset if the reset button is pressed

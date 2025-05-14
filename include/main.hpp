@@ -164,6 +164,7 @@ void factoryReset();
 void messageScroll();
 void scrubUserData();
 bool setMatrixOrientation(bool flipDisplay);
+void memoryUsage();
 void setup();
 void loop();
 

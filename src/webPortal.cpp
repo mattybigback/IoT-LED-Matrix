@@ -43,7 +43,7 @@ void handleRoot() {
 }
 
 // Server response to incoming data from form
-void handleForm() {
+void handleUpdate() {
 // visual feedback
 #if defined(HAS_NEOPIXEL)
     neopixelWrite(NEOPIXEL_PIN, ORANGE);
