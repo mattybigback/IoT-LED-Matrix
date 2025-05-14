@@ -241,9 +241,8 @@ void setup() {
     #endif
 
     server.on("/", handleRoot);       // Function to call when root page is loaded
-    server.on("/update", handleUpdate); // Function to call when form is submitted and update page is loaded
     server.on("/api/message", handleAPI);
-    server.on("/flip", handleFlip); // Function to call when flip page is loaded
+    server.serveStatic("/", LittleFS, "/confpage/");
     server.begin(); // Start http server
 
     char hostnameBuffer[32];

@@ -4,7 +4,6 @@
 #include "main.hpp"
 
 void handleRoot();
-void handleUpdate();
 void handleAPI();
 void handleFlip();
 
