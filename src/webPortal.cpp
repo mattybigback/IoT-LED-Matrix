@@ -254,16 +254,12 @@ void handleAPI() {
             displaySettingsChanged = true;
         }
             
-    // Reset display if new message or settings have changed
-    if (newMessageAvailable || displaySettingsChanged) {
-        matrix.displayClear();
-        matrix.displayReset();
-        resetDisplay = true;
-    }
+    // Set reset display flag to true if new message is recieved or settings have changed
+    resetDisplay |= newMessageAvailable || displaySettingsChanged;
 
     // Send HTTP response
-    String response;
-    serializeJson(reqDoc, response);
+    char response[16] = "{\"status\":\"ok\"}";
+    //serializeJson(reqDoc, response);
     server.send(200, "application/json", response);
     #if defined(HAS_NEOPIXEL)
         neopixelWrite(NEOPIXEL_PIN, GREEN);

@@ -22,7 +22,7 @@ MD_Parola matrix = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX72XX_DEVICE_COUNT);
 void messageScroll() {
     // If the display is still animating OR the resetDisplay flag has been set
     if (matrix.displayAnimate() || resetDisplay) {
-
+        matrix.displayClear();
         if (newMessageAvailable) {            // If a new message has been set
             debugln("New message available"); // Debug message
             resetDisplay = false;             // Clear the resetDisplay flag
