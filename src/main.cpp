@@ -134,12 +134,14 @@ bool setMatrixOrientation(bool flipDisplay) {
 void setup() {
     debugSetup(BAUD_RATE);
     debugln("Booting...");
-    WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
+     // explicitly set mode, esp defaults to STA+AP and hold until mode is set
+    while (!WiFi.mode(WIFI_STA)){
+        
+    }
     debugln("Wifi mode set");
-#if defined(HAS_NEOPIXEL)
-    neopixelWrite(NEOPIXEL_PIN, YELLOW); // yellow
-#endif
-    delay(250);
+    #if defined(HAS_NEOPIXEL)
+        neopixelWrite(NEOPIXEL_PIN, YELLOW); // yellow
+    #endif
     pinMode(SOFT_RESET, INPUT_PULLUP);
 
     // Begin matrix, set scroll speed and intensity from global variables
