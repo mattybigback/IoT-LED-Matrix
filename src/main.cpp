@@ -8,7 +8,7 @@ bool displaySettingsChanged;
 bool resetDisplay;
 int intensity = 15;
 int scrollSpeed = 30;
-bool displayFlipped;
+bool displayFlipped = false;
 textEffect_t scrollEffect; 
 textPosition_t scrollAlign; 
 int scrollPause;          
@@ -144,52 +144,6 @@ void setup() {
     #endif
     pinMode(SOFT_RESET, INPUT_PULLUP);
 
-    // Begin matrix, set scroll speed and intensity from global variables
-    matrix.begin();
-    displayFlipped = setMatrixOrientation(0);
-    matrix.setSpeed(scrollSpeed);
-    matrix.setIntensity(intensity);
-
-    // Call factory reset funcion if pin is low
-    if (!digitalRead(SOFT_RESET)) {
-        factoryReset();
-    }
-
-    matrix.print("BOOT");
-
-    // Start WiFiManager
-    startWifiManager();
-#if defined(HAS_NEOPIXEL)
-    neopixelWrite(NEOPIXEL_PIN, GREEN); // green
-#endif
-
-    server.on("/", handleRoot);       // Function to call when root page is loaded
-    server.on("/update", handleForm); // Function to call when form is submitted and update page is loaded
-    server.on("/api", handleAPI);
-    server.on("/flip", handleFlip); // Function to call when flip page is loaded
-    server.begin(); // Start http server
-
-    char hostnameBuffer[32];
-    sprintf(hostnameBuffer, "%S%08X", APNAME_PREFIX, getChipId());
-    WiFi.hostname(hostnameBuffer);
-
-    char ipAddress[16]; // Char array to store human readable IP address
-    sprintf(ipAddress, "%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
-
-    // Copy IP address to newMessage display buffer so that it is scrolled across the display
-    strcpy(newMessage, ipAddress);
-    // Reset Display
-    matrix.displayClear();
-    // Set up text scroll animation
-    matrix.displayText(curMessage, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
-
-    // Set newMessageAvailable and resetDisplay flags
-    newMessageAvailable = true;
-    displaySettingsChanged = true;
-    resetDisplay = true;
-    // Trigger scroll animation
-    messageScroll();
-
     // Begin LittleFS and check if it successfully mounts FS.
     if (!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)) {
         debugln("LittleFS Mount Failed");
@@ -253,7 +207,59 @@ void setup() {
     // By not also setting the displayReset flag the first message can continue to scroll
     newMessageAvailable = true;
     displaySettingsChanged = true;
+
+
+    // Begin matrix, set scroll speed and intensity from global variables
+    matrix.begin();
+    setMatrixOrientation(displayFlipped);
+    matrix.setSpeed(scrollSpeed);
+    matrix.setIntensity(intensity);
+
+    // Call factory reset funcion if pin is low
+    if (!digitalRead(SOFT_RESET)) {
+        factoryReset();
+    }
+
+    matrix.print("BOOT");
+
+    // Start WiFiManager
+    startWifiManager();
+    #if defined(HAS_NEOPIXEL)
+        neopixelWrite(NEOPIXEL_PIN, GREEN); // green
+    #endif
+
+    server.on("/", handleRoot);       // Function to call when root page is loaded
+    server.on("/update", handleForm); // Function to call when form is submitted and update page is loaded
+    server.on("/api", handleAPI);
+    server.on("/flip", handleFlip); // Function to call when flip page is loaded
+    server.begin(); // Start http server
+
+    char hostnameBuffer[32];
+    sprintf(hostnameBuffer, "%S%08X", APNAME_PREFIX, getChipId());
+    WiFi.hostname(hostnameBuffer);
+
+    char ipAddress[16]; // Char array to store human readable IPv4 address
+    sprintf(ipAddress, "%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
+
+    // Copy IP address to newMessage display buffer so that it is scrolled across the display
+    strcpy(newMessage, ipAddress);
+    // Reset Display
+    matrix.displayClear();
+    // Set up text scroll animation
+    matrix.displayText(curMessage, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
+    messageScroll();
+
+    // Read message file from LittleFS and store it in the newMessage char array
+    file = LittleFS.open(messagePath, "r");
+    incomingFS = file.readStringUntil('\n');
+    incomingFS.toCharArray(newMessage, MSG_BUF_SIZE);
+    // Set newMessageAvailable and resetDisplay flags
+    newMessageAvailable = true;
+    displaySettingsChanged = true;
+    // resetDisplay = true;
+    
 }
+
 
 void loop() {
     messageScroll();       // Scroll the message
