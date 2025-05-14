@@ -113,18 +113,19 @@ void handleForm() {
 
     // Send HTTP response
     server.send(200, "text/html", pageContent);
-#if defined(HAS_NEOPIXEL)
-    neopixelWrite(NEOPIXEL_PIN, GREEN);
-#endif
+    #if defined(HAS_NEOPIXEL)
+        neopixelWrite(NEOPIXEL_PIN, GREEN);
+    #endif
 }
 
 void handleAPI() {
     if (server.method() == HTTP_PUT) {
         // Bool flags to track if the parameters have changed
-        bool messageChanged = false;
-        bool intensityChanged = false;
-        bool speedChanged = false;
-        bool displayFlippedChanged = false;
+        bool rcvMessage = false;
+        bool rcvIntensity = false;
+        bool rcvSpeed = false;
+        bool rcvDisplayFlipped = false;
+        bool rcvMakeChangeImmediately = false;
 
         // Turn the LED or NeoPixel orange to indicate action
         #if defined(HAS_NEOPIXEL)
@@ -167,7 +168,7 @@ void handleAPI() {
                 snprintf(errBuf, sizeof(errBuf), "Too long (%d). Max allowed length is %d", messageLength, MSG_BUF_SIZE - 1);
                 errors["message"] = errBuf;
             }
-            messageChanged = true;
+            rcvMessage = true;
         }
         JsonVariant intensityVariant = reqDoc["intensity"];
         if (!reqDoc["intensity"].isNull()) {
@@ -184,7 +185,7 @@ void handleAPI() {
                     errors["intensity"] = errBuf;
                 }
             }
-            intensityChanged = true;
+            rcvIntensity = true;
         }
         JsonVariant speedVariant = reqDoc["speed"];
         if (!speedVariant.isNull()) {
@@ -201,7 +202,7 @@ void handleAPI() {
                     errors["speed"] = errBuf;
                 }
             }
-            speedChanged = true;
+            rcvSpeed = true;
         }
         JsonVariant flipVariant = reqDoc["display_flipped"];
         if (!flipVariant.isNull()) {
@@ -210,7 +211,16 @@ void handleAPI() {
                 debugln("Display flipped not a bool");
                 errors["display_flipped"] = "Must be true or false";
             }
-            displayFlippedChanged = true;
+            rcvDisplayFlipped = true;
+        }
+        JsonVariant imediateChangeVariant = reqDoc["change_immediately"];
+        if (!imediateChangeVariant.isNull()) {
+            debugln("change_immediately received");
+            if (!reqDoc["change_immediately"].is<bool>()) {
+                debugln("change_immediately not a bool");
+                errors["change_immediately"] = "Must be true or false";
+            }
+            rcvMakeChangeImmediately = true;
         }
 
         // If errors are found, send a 400 response with the errors and return
@@ -223,7 +233,7 @@ void handleAPI() {
             server.send(400, "application/json", errJson);
             return;
         }
-        if (messageChanged) {
+        if (rcvMessage) {
             debug("Message: ");
             debugln(messageVariant.as<const char *>());
             newMessageAvailable = true;
@@ -232,30 +242,34 @@ void handleAPI() {
             LittleFS.open(messagePath, "w").print(newMessage);
 
         }
-        if (intensityChanged) {
+        if (rcvIntensity) {
             debug("Intensity: ");
             debugln(intensityVariant.as<int>());
             intensity = intensityVariant.as<int>();
             LittleFS.open(intensityConfPath, "w").print(intensity);
             displaySettingsChanged = true;
         }
-        if (speedChanged) {
+        if (rcvSpeed) {
             debug("Speed: ");
             debugln(speedVariant.as<int>());
             scrollSpeed = speedVariant.as<int>();
             LittleFS.open(speedConfPath, "w").print(scrollSpeed);
             displaySettingsChanged = true;
         }
-        if (displayFlippedChanged) {
+        if (rcvDisplayFlipped) {
             debug("Display flipped: ");
             debugln(flipVariant.as<bool>());
             displayFlipped = flipVariant.as<bool>();
             LittleFS.open(flipConfPath, "w").print(displayFlipped);
             displaySettingsChanged = true;
         }
-            
-    // Set reset display flag to true if new message is recieved or settings have changed
-    resetDisplay |= newMessageAvailable || displaySettingsChanged;
+        if (rcvMakeChangeImmediately) {
+            debug("Make change immediately: ");
+            debugln(imediateChangeVariant.as<bool>());
+            if (imediateChangeVariant.as<bool>()) {
+                resetDisplay = resetDisplay |= newMessageAvailable || displaySettingsChanged;
+            }
+        }
 
     // Send HTTP response
     char response[16] = "{\"status\":\"ok\"}";
