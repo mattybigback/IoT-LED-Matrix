@@ -275,7 +275,7 @@ void setup() {
     server.begin(); // Start http server
 
     // Copy IP address and mDNS url to newMessage display buffer so that it is scrolled across the display
-    snprintf(newMessage, MSG_BUF_SIZE, "%s    %s", ipAddress, hostnameBuffer);
+    snprintf(curMessage, MSG_BUF_SIZE, "%s    %s", ipAddress, hostnameBuffer);
     // Reset Display
     matrix.displayClear();
     // Set up text scroll animation
