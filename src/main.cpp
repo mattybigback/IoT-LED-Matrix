@@ -240,34 +240,53 @@ void setup() {
         neopixelWrite(NEOPIXEL_PIN, GREEN); // green
     #endif
 
-    server.on("/", handleRoot);       // Function to call when root page is loaded
-    server.on("/api/message", handleAPI);
-    server.serveStatic("/", LittleFS, "/confpage/");
-    server.begin(); // Start http server
-
-    char hostnameBuffer[32];
-    sprintf(hostnameBuffer, "%S%08X", APNAME_PREFIX, getChipId());
+    char hostnameBuffer[40]; // Char array to store hostname
+    // Set the hostname
+    snprintf(hostnameBuffer, sizeof(hostnameBuffer), "%s%08X", HOSTNAME_PREFIX, getChipId());
     WiFi.hostname(hostnameBuffer);
+    debug("Hostname: ");
+    debugln(hostnameBuffer); // Print the hostname to the serial monitor
 
+    // Start mDNS responder
+    if (!MDNS.begin(hostnameBuffer)) {
+        debugln("Error setting up MDNS responder!");
+    } else {
+        debug("MDNS responder started: ");
+        strlcat(hostnameBuffer, ".local", sizeof(hostnameBuffer) - strlen(hostnameBuffer) - 1); // Append ".local" to the hostname
+        debugln(hostnameBuffer);
+    }
+    
+    // Get the IP address
     char ipAddress[16]; // Char array to store human readable IPv4 address
     sprintf(ipAddress, "%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
+    debug("IP Address: ");
+    debugln(ipAddress); // Print the IP address to the serial monitor
 
-    // Copy IP address to newMessage display buffer so that it is scrolled across the display
-    strcpy(newMessage, ipAddress);
-    // Reset Display
-    matrix.displayClear();
-    // Set up text scroll animation
-    matrix.displayText(curMessage, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
-    messageScroll();
 
     // Read message file from LittleFS and store it in the newMessage char array
     file = LittleFS.open(messagePath, "r");
     incomingFS = file.readStringUntil('\n');
     incomingFS.toCharArray(newMessage, MSG_BUF_SIZE);
+
+    // Set up the web server and define the routes
+    server.on("/", handleRoot);       // Function to call when root page is loaded
+    server.on("/api/message", handleAPI);
+    server.serveStatic("/", LittleFS, "/confpage/");
+    server.begin(); // Start http server
+
+    // Copy IP address and mDNS url to newMessage display buffer so that it is scrolled across the display
+    snprintf(newMessage, MSG_BUF_SIZE, "%s    %s", ipAddress, hostnameBuffer);
+    // Reset Display
+    matrix.displayClear();
+    // Set up text scroll animation
+    matrix.displayText(curMessage, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
+    messageScroll();
+    
     // Set flags to notify that a new message is available and that the display settings have changed
     // This is done so that the display will reset and scroll the new message when the IP address is finished scrolling
     newMessageAvailable = true;
     displaySettingsChanged = true;
+
     
 }
 

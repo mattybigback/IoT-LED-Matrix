@@ -33,11 +33,11 @@
 // Network-related libraries
 #include <DNSServer.h>  // Needed for WiFiManager captive portal
 #if defined(ARDUINO_ARCH_ESP32)
-    #include <NetBIOS.h>
+    #include <ESPmDNS.h>
     #include <WebServer.h>
     #include <WiFi.h>
     #elif defined(ARDUINO_ARCH_ESP8266)
-    #include <ESP8266NetBIOS.h>
+    #include <ESP8266mDNS.h>
     #include <ESP8266WebServer.h>
     #include <ESP8266WiFi.h>
 #endif
@@ -120,6 +120,7 @@
     and 8 are used for the board ID
 */
 #define APNAME_PREFIX "ESP32-"
+#define HOSTNAME_PREFIX "esp"
 static_assert(
     sizeof(APNAME_PREFIX) - 1 <= 8,
     "APNAME_PREFIX exceeds the maximum allowed length of 24 characters."
