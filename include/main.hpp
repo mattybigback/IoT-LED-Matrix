@@ -31,7 +31,7 @@
 #include <ArduinoJson.h>
 
 // Network-related libraries
-#include <DNSServer.h>
+#include <DNSServer.h>  // Needed for WiFiManager captive portal
 #if defined(ARDUINO_ARCH_ESP32)
     #include <NetBIOS.h>
     #include <WebServer.h>

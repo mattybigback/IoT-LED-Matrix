@@ -187,7 +187,7 @@ void handleAPI() {
 
         JsonDocument settings;
 
-        settings["message"] = curMessage;
+        settings["message"] = newMessage;
         settings["message_max_len"] = MSG_BUF_SIZE - 1;
         settings["intensity"] = intensity;
         settings["intensity_min"] = INTENSITY_MIN;
