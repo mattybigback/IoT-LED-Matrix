@@ -98,30 +98,20 @@ void memoryUsage() {
 
 // Function to get IP address as a cstring
 void getIpAddress(char* buffer, size_t bufferSize, bool includePort) {
+    String ip = WiFi.localIP().toString();
     if (includePort && WEB_SERVER_PORT != 80) {
-        snprintf(buffer, bufferSize,
-            "%d.%d.%d.%d:%d",
-            WiFi.localIP()[0],
-            WiFi.localIP()[1],
-            WiFi.localIP()[2],
-            WiFi.localIP()[3],
-            WEB_SERVER_PORT);
+        snprintf(buffer, bufferSize, "%s:%d", ip.c_str(), WEB_SERVER_PORT);
     } else {
-        snprintf(buffer, bufferSize,
-            "%d.%d.%d.%d",
-            WiFi.localIP()[0],
-            WiFi.localIP()[1],
-            WiFi.localIP()[2],
-            WiFi.localIP()[3]);
+        snprintf(buffer, bufferSize, "%s", ip.c_str());
     }
 }
 
 char* getURL() {
-    static char url[50]; // Char array to store the URL
+    static char url[51]; // Char array to store the URL
     #if WEB_SERVER_PORT != 80
-        snprintf(url, sizeof(url), "http://%s%08x.local:%d", HOSTNAME_PREFIX, getChipId(), WEB_SERVER_PORT);
+        snprintf(url, sizeof(url), "http://%s%06x.local:%d", HOSTNAME_PREFIX, getChipId(), WEB_SERVER_PORT);
     #else
-        snprintf(url, sizeof(url), "http://%s%08x.local", HOSTNAME_PREFIX, getChipId());
+        snprintf(url, sizeof(url), "http://%s%06x.local", HOSTNAME_PREFIX, getChipId());
     #endif
     debug("URL: ");
     debugln(url); // Print the URL to the serial monitor
@@ -230,7 +220,7 @@ void setup() {
 
     char hostnameBuffer[40]; // Char array to store hostname
     // Set the hostname
-    snprintf(hostnameBuffer, sizeof(hostnameBuffer), "%s%08X", HOSTNAME_PREFIX, getChipId());
+    snprintf(hostnameBuffer, sizeof(hostnameBuffer), "%s%06x", HOSTNAME_PREFIX, getChipId());
     WiFi.hostname(hostnameBuffer);
     debug("Hostname: ");
     debugln(hostnameBuffer); // Print the hostname to the serial monitor
@@ -300,12 +290,8 @@ void loop() {
 if (!digitalRead(ADDRESS_SCROLL_BUTTON)) {
     if (!buttonPreviouslyPressed) { // Only execute if the button was not previously pressed
         buttonPreviouslyPressed = true; // Update the state to indicate the button is now pressed
-
         char ipAddressBuffer[22]; // Char array to store the IP address
-        debug("Getting IP address...");
         getIpAddress(ipAddressBuffer, sizeof(ipAddressBuffer), true);
-        debugln(ipAddressBuffer);
-        debugln("Attempting snprintf...");
         snprintf(curMessage, MSG_BUF_SIZE, "%s    %s", ipAddressBuffer, getURL());
         // Reset Display
         matrix.displayClear();
@@ -316,7 +302,7 @@ if (!digitalRead(ADDRESS_SCROLL_BUTTON)) {
         // Set flags to notify that a new message is available and that the display settings have changed
         // This is done so that the display will reset and scroll the new message when the IP address is finished scrolling
         newMessageAvailable = true;
-        displaySettingsChanged = true;;
+        displaySettingsChanged = true;
     }
 } else {
     buttonPreviouslyPressed = false; // Reset the state when the button is released

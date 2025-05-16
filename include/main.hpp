@@ -113,15 +113,26 @@
 #define SCROLL_SPEED_MAX 200
 
 /*  
-    WiFi AP Name - Should not exceed 24 chracters as 
-    the maximum length for an SSID is 32 characters, 
-    and 8 are used for the board ID
+    WiFi AP Name - Should not exceed 25 chracters as 
+    the maximum length for an SSID is 31 characters (plus null terminator), 
+    and 6 are used for the board ID
 */
-#define APNAME_PREFIX "ESP32-"
-#define HOSTNAME_PREFIX "esp"
+#define APNAME_PREFIX "MATRIX_SETUP_"
 static_assert(
-    sizeof(APNAME_PREFIX) - 1 <= 8,
-    "APNAME_PREFIX exceeds the maximum allowed length of 24 characters."
+    sizeof(APNAME_PREFIX) - 1 <= 25,
+        "APNAME_PREFIX is too long: SSID (prefix + 6 hex chars) must be <= 31 characters."
+);
+
+/*  
+    Hostname - Should not exceed 25 chracters as 
+    the maximum length for an hostname is 31 characters (plus null terminator), 
+    and 6 are used for the board ID
+*/
+
+#define HOSTNAME_PREFIX "espmatrix-"
+static_assert(
+    sizeof(HOSTNAME_PREFIX) - 1 <= 25,
+        "APNAME_PREFIX is too long: hostname (prefix + 6 hex chars) must be <= 31 characters."
 );
 
 // Matrix display arrays
