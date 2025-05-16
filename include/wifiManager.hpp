@@ -1,5 +1,5 @@
-#ifndef WIFIMANAGER_H
-#define WIFIMANAGER_H
+#ifndef WIFIMANAGER_HPP
+#define WIFIMANAGER_HPP
 
 #include "main.hpp"
 

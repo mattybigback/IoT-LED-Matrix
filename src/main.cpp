@@ -1,4 +1,3 @@
-
 #include "main.hpp"
 
 char curMessage[MSG_BUF_SIZE] = {""};
@@ -19,37 +18,6 @@ int scrollPause;
 #endif
 MD_Parola matrix = MD_Parola(HARDWARE_TYPE, CS_PIN, MAX72XX_DEVICE_COUNT); 
 
-void messageScroll() {
-    // If the display is still animating OR the resetDisplay flag has been set
-    if (matrix.displayAnimate() || resetDisplay) {
-        matrix.displayClear();
-        if (newMessageAvailable) {            // If a new message has been set
-            debugln("New message available"); // Debug message
-            resetDisplay = false;             // Clear the resetDisplay flag
-            snprintf(curMessage, MSG_BUF_SIZE, "%s", newMessage); // Copy the newMessage buffer to curMessage
-            newMessageAvailable = false;      // Clear the newMessageAvailabe flag
-
-        }
-        if (displaySettingsChanged) { // If the display settings have changed
-            debugln("Display settings changed"); // Debug message
-            resetDisplay = false;             // Clear the resetDisplay flag
-            matrix.setSpeed(scrollSpeed);        // Set the scroll speed
-            debug("Scroll speed: ");
-            debugln(scrollSpeed);               // Debug message
-            matrix.setIntensity(intensity);      // Set the intensity
-            debug("Intensity: ");
-            debugln(intensity);                 // Debug message
-            setMatrixOrientation(displayFlipped); // Set the display orientation
-            debug("Display flipped: ");
-            debugln(displayFlipped);           // Debug message
-            displaySettingsChanged = false;      // Clear the displaySettingsChanged flag
-        }
-        matrix.displayReset(); // If display has finished animating reset the animation
-        #if defined(HAS_NEOPIXEL)
-            neopixelWrite(NEOPIXEL_PIN, GREEN);
-        #endif
-    }
-}
 
 void factoryReset() {
 // Holds execution until reset button is released
@@ -69,7 +37,12 @@ void factoryReset() {
 }
 
 uint32_t getChipId() {
-
+    // Get the chip ID
+    // ESP32: 48 bits, 6 bytes
+    // ESP8266: 32 bits, 4 bytes
+    // The chip ID is a unique identifier for the ESP32/ESP8266 chip
+    // It is used to identify the device on the network
+    // The chip ID is not the same as the MAC address
 #if defined(ARDUINO_ARCH_ESP32)
     uint32_t id = 0;
     for (int i = 0; i < 17; i = i + 8) {
@@ -78,6 +51,8 @@ uint32_t getChipId() {
 #elif defined(ARDUINO_ARCH_ESP8266)
     uint32_t id = ESP.getChipId(); // Get the chip ID
 #endif
+    debug("Chip ID: ");
+    debugln(id); // Print the chip ID to the serial monitor
     return id;
 }
 
@@ -107,29 +82,7 @@ void scrubUserData() {
     }
 }
 
-bool setMatrixOrientation(bool flipDisplay) {
-    matrix.displayClear();
-    //matrix.displayReset();
-    matrix.setZoneEffect(0, flipDisplay, PA_FLIP_LR);
-    matrix.setZoneEffect(0, flipDisplay, PA_FLIP_UD);
 
-    // Set the matrix orientation
-    if (flipDisplay) {
-        debugln("Flipping display");
-        scrollEffect = PA_SCROLL_RIGHT;
-        scrollAlign = PA_RIGHT;
-
-    } else {
-        // Set the matrix to the default orientation
-        debugln("Setting display to default orientation");
-        scrollEffect = PA_SCROLL_LEFT;
-        scrollAlign = PA_LEFT;
-
-    }
-
-    matrix.displayText(curMessage, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
-    return flipDisplay;
-}
 #if DEBUG==1
 void memoryUsage() {
     // Print the free heap memory
@@ -143,6 +96,38 @@ void memoryUsage() {
 }
 #endif
 
+// Function to get IP address as a cstring
+void getIpAddress(char* buffer, size_t bufferSize, bool includePort) {
+    if (includePort && WEB_SERVER_PORT != 80) {
+        snprintf(buffer, bufferSize,
+            "%d.%d.%d.%d:%d",
+            WiFi.localIP()[0],
+            WiFi.localIP()[1],
+            WiFi.localIP()[2],
+            WiFi.localIP()[3],
+            WEB_SERVER_PORT);
+    } else {
+        snprintf(buffer, bufferSize,
+            "%d.%d.%d.%d",
+            WiFi.localIP()[0],
+            WiFi.localIP()[1],
+            WiFi.localIP()[2],
+            WiFi.localIP()[3]);
+    }
+}
+
+char* getURL() {
+    static char url[50]; // Char array to store the URL
+    #if WEB_SERVER_PORT != 80
+        snprintf(url, sizeof(url), "http://%s%08x.local:%d", HOSTNAME_PREFIX, getChipId(), WEB_SERVER_PORT);
+    #else
+        snprintf(url, sizeof(url), "http://%s%08x.local", HOSTNAME_PREFIX, getChipId());
+    #endif
+    debug("URL: ");
+    debugln(url); // Print the URL to the serial monitor
+    return url;
+}
+
 void setup() {
     debugSetup(BAUD_RATE);
     debugln("Booting...");
@@ -155,6 +140,9 @@ void setup() {
         neopixelWrite(NEOPIXEL_PIN, YELLOW); // yellow
     #endif
     pinMode(SOFT_RESET, INPUT_PULLUP);
+    #if defined(ADDRESS_SCROLL_BUTTON)
+    pinMode(ADDRESS_SCROLL_BUTTON, INPUT_PULLUP);
+    #endif
 
     // Begin LittleFS and check if it successfully mounts FS.
     if (!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)) {
@@ -252,15 +240,14 @@ void setup() {
         debugln("Error setting up MDNS responder!");
     } else {
         debug("MDNS responder started: ");
-        strlcat(hostnameBuffer, ".local", sizeof(hostnameBuffer) - strlen(hostnameBuffer) - 1); // Append ".local" to the hostname
-        debugln(hostnameBuffer);
+        debugln(getURL());
     }
     
     // Get the IP address
-    char ipAddress[16]; // Char array to store human readable IPv4 address
-    sprintf(ipAddress, "%d.%d.%d.%d", WiFi.localIP()[0], WiFi.localIP()[1], WiFi.localIP()[2], WiFi.localIP()[3]);
+    char ipAddressBuffer[22]; // Char array to store the IP address
+    getIpAddress(ipAddressBuffer, sizeof(ipAddressBuffer), true); // Get the IP address
     debug("IP Address: ");
-    debugln(ipAddress); // Print the IP address to the serial monitor
+    debugln(ipAddressBuffer); // Print the IP address to the serial monitor
 
 
     // Read message file from LittleFS and store it in the newMessage char array
@@ -275,7 +262,8 @@ void setup() {
     server.begin(); // Start http server
 
     // Copy IP address and mDNS url to newMessage display buffer so that it is scrolled across the display
-    snprintf(curMessage, MSG_BUF_SIZE, "%s    %s", ipAddress, hostnameBuffer);
+    
+    snprintf(curMessage, MSG_BUF_SIZE, "%s    %s", ipAddressBuffer, getURL());
     // Reset Display
     matrix.displayClear();
     // Set up text scroll animation
@@ -306,4 +294,32 @@ void loop() {
     if (!digitalRead(SOFT_RESET)) {
         factoryReset();
     }
+    #if defined(ADDRESS_SCROLL_BUTTON)
+    static bool buttonPreviouslyPressed = false; // Track the previous state of the button
+
+if (!digitalRead(ADDRESS_SCROLL_BUTTON)) {
+    if (!buttonPreviouslyPressed) { // Only execute if the button was not previously pressed
+        buttonPreviouslyPressed = true; // Update the state to indicate the button is now pressed
+
+        char ipAddressBuffer[22]; // Char array to store the IP address
+        debug("Getting IP address...");
+        getIpAddress(ipAddressBuffer, sizeof(ipAddressBuffer), true);
+        debugln(ipAddressBuffer);
+        debugln("Attempting snprintf...");
+        snprintf(curMessage, MSG_BUF_SIZE, "%s    %s", ipAddressBuffer, getURL());
+        // Reset Display
+        matrix.displayClear();
+        // Set up text scroll animation
+        matrix.displayText(curMessage, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
+        //messageScroll();
+        
+        // Set flags to notify that a new message is available and that the display settings have changed
+        // This is done so that the display will reset and scroll the new message when the IP address is finished scrolling
+        newMessageAvailable = true;
+        displaySettingsChanged = true;;
+    }
+} else {
+    buttonPreviouslyPressed = false; // Reset the state when the button is released
+}
+    #endif
 }

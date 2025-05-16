@@ -22,8 +22,8 @@
    Use this code at your own risk. I know I do.
 */
 
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef MAIN_HPP
+#define MAIN_HPP
 
 // File system libraries
 #include <FS.h>
@@ -64,7 +64,7 @@
 #define DATA_PIN MOSI   // SPI data out pin
 #define CS_PIN SS       // SPI chip select pin
 
-#define WEB_SERVER_PORT 80          // Web server port
+#define WEB_SERVER_PORT 50000          // Web server port
 
 // Set the platformio env does not specify NEOPIXEL_PIN then use RGB_BUILTIN (Defined by the board definition)
 #if !defined(NEOPIXEL_PIN)
@@ -155,12 +155,14 @@ extern int scrollPause;             // in milliseconds. Not used by default - ho
     extern ESP8266WebServer server; // ESP8266 web server
 #endif
 
-//Instantiate the matrix object
+// Instantiate the matrix object
 extern MD_Parola matrix; 
 
 /* --  Function definitions  -- */
 
 uint32_t getChipId();
+void getIpAddress(char* buffer, size_t bufferSize, bool includePort);
+char* getHostname();
 void factoryReset();
 void messageScroll();
 void scrubUserData();

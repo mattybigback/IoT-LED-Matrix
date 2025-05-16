@@ -1,5 +1,5 @@
-#ifndef WEBPORTAL_H
-#define WEBPORTAL_H
+#ifndef WEBPORTAL_HPP
+#define WEBPORTAL_HPP
 
 #include "main.hpp"
 
