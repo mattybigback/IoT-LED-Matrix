@@ -64,8 +64,6 @@
 #define DATA_PIN MOSI   // SPI data out pin
 #define CS_PIN SS       // SPI chip select pin
 
-#define WEB_SERVER_PORT 50000          // Web server port
-
 // Set the platformio env does not specify NEOPIXEL_PIN then use RGB_BUILTIN (Defined by the board definition)
 #if !defined(NEOPIXEL_PIN)
     #define NEOPIXEL_PIN RGB_BUILTIN
