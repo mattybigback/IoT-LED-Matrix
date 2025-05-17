@@ -75,6 +75,11 @@
 #define speedConfPath "/speed.dat"
 #define flipConfPath "/flip.dat"
 
+/* --  Default web server port  -- */
+#ifndef WEB_SERVER_PORT
+    #define WEB_SERVER_PORT 80
+#endif
+
 /* --  Serial debugging macro definitions  -- */
 #define BAUD_RATE 115200
 #define DEBUG 1 // Set to 1 to enable debug messages
