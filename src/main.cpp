@@ -302,9 +302,9 @@ void loop() {
     if (!digitalRead(FACTORY_RESET_PIN)) {
         factoryReset();
     }
-    #if defined(ADDRESS_SCROLL_BUTTON)
+    #if defined(ADDR_SCROLL_PIN)
         static bool buttonPreviouslyPressed = false; // Track the previous state of the button
-        if (!digitalRead(ADDRESS_SCROLL_BUTTON)) {
+        if (!digitalRead(ADDR_SCROLL_PIN)) {
             if (!buttonPreviouslyPressed) { // Only execute if the button was not previously pressed
                 buttonPreviouslyPressed = true; // Update the state to indicate the button is now pressed
                 char ipAddressBuffer[22]; // Char array to store the IP address
