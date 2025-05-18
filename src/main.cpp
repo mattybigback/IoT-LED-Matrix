@@ -143,8 +143,8 @@ void setup() {
         neopixelWrite(NEOPIXEL_PIN, YELLOW); // yellow
     #endif
     pinMode(FACTORY_RESET_PIN, INPUT_PULLUP);
-    #if defined(ADDRESS_SCROLL_BUTTON)
-    pinMode(ADDRESS_SCROLL_BUTTON, INPUT_PULLUP);
+    #if defined(ADDR_SCROLL_PIN)
+    pinMode(ADDR_SCROLL_PIN, INPUT_PULLUP);
     #endif
 
     // Begin LittleFS and check if it successfully mounts FS.
