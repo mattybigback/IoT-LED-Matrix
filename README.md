@@ -25,7 +25,7 @@ The matrix module used was a generic 32x8 module, commonly sold on Amazon, Ebay 
 
 6. Build and upload the firmware.
 
-    ```pio run --target upload --enviroment <environment>```
+    ```pio run --target upload --environment <environment>```
 
 ## Libraries
 
@@ -36,7 +36,7 @@ The required libraries are listed in the [platformio.ini](http://_vscodecontentr
 | [MD_Parola](https://github.com/MajicDesigns/MD_Parola) | 3.7.3 | majicDesigns |
 | [WiFiManager](https://github.com/tzapu/WiFiManager) | 2.0.17 | tzapu |
 
-## Wiring Instructions (For FW16 Matrix)
+## Wiring Instructions (For FC16 Matrix)
 
 | ESP Pin       | Matrix Pin   |
 |---------------|--------------|
@@ -50,20 +50,23 @@ Ensure the power supply can handle the current requirements of the LED matrix. P
 
 ## GPIO Pins Used
 
-| Board               | SCK  | MOSI | CS (SS) | Soft Reset | Address Scroll |
-|----------------------|-----------|-------------|---------|------------|----------------|
-| ESP32 (WROOM32D)    | GPIO18    | GPIO23      | GPIO5   | GPIO4      | GPIO13         |
-| ESP32-C3 DevKitM-1  | GPIO4     | GPIO6       | GPIO7   | GPIO18     | GPIO2          |
-| ESP32-C3 Zero       | GPIO4     | GPIO6       | GPIO7   | GPIO0      | GPIO1          |
-| ESP8266 (ESP8266mod)| GPIO14    | GPIO13      | GPIO15  | GPIO4      | GPIO5          |
+| Board            | SCK         |     MOSI    | CS (SS)     | Factory Reset | Address Scroll |
+|---------------------|-------------|-------------|-------------|------------|----------------|
+| ESP32               | GPIO18      | GPIO23      | GPIO5       | GPIO4      | GPIO13         |
+| ESP32-C3 DevKitM-1  | GPIO4       | GPIO6       | GPIO7       | GPIO18     | GPIO2          |
+| ESP32-C3 Zero       | GPIO4       | GPIO6       | GPIO7       | GPIO0      | GPIO1          |
+| ESP8266 (Wemos D1)  | GPIO14 (D5) | GPIO13 (D7) | GPIO15 (D8) | GPIO4 (D2) | GPIO5 (D1)     |
 
+The button pins have been chosen so that they use internal pullups, so no external pullup is required. This allows the device to function even if those pins are left unconnected.
 
 ## Operation
 
-### Access point mode (first boot)
-When the module first starts it will be in WiFiManager mode. Nothing is displayed during this time.
+On power up, the display will show ```BOOT``` for a short time.
 
-The ESP module starts in access point mode, with a unique network name (SSID). Connect to this network using your device and you should be automatically taken to the configuration page. To access the configuration page manually navigate to the static IP address in any web browser (by default this is set as 192.168.4.1).
+### Access point mode (first boot)
+When the module first starts it will be in WiFiManager mode. During this time, the display will show ```SETUP```
+
+The ESP module starts in access point mode, with a unique network name (SSID) that is determined by the ```APNAME_PREFIX``` definition and the last six hex characters of the device's ID/MAC address. Connect to this network using your device and you should be automatically taken to the configuration page. To access the configuration page manually, navigate to the static IP address in any web browser (by default this is set as 192.168.4.1).
 
 Access point mode is entered whenever a successful connection to WiFi could not be made.
 
@@ -73,9 +76,17 @@ Access point mode is entered whenever a successful connection to WiFi could not 
 
 Once a connection to a WiFi network has been established the matrix will scroll the IP address and URL of the configuration page, followed by either the built-in message or whichever message is stored in the ESP file system. The first message to be shown on connection to the WiFi network will always be the local IP address and URL.
 
+#### Buttons
+
+There are two optional buttons that have been implemented.
+
+* **Factory Reset** - wipes all user data (messages, display settings, WiFi settings) and puts the device back into access point mode. If pressed, the display will show ```RESET``` while user data is erased.
+
+* **Address Scroll** - Clears the display and scrolls the IP address and URL.
+
 #### Web portal
 
-The web portal can be accessed over http using the port defined in platformio.ini (default is port 80). Additonally, mDNS is implemented, so if your device supports it you can access the web portal using the .local URL
+The web portal can be accessed over http using the port defined in platformio.ini (default is port 80). Additionally, mDNS is implemented, so if your device supports it you can access the web portal using the .local URL. This URL can be customised by using the build flag ```HOSTNAME_PREFIX```.
 
 The configuration page includes the following parameters:
 
@@ -114,11 +125,10 @@ Messages and settings can be set and retrieved using the ```/api/message``` API 
     "intensity": 5,
     "speed": 30,
     "display_flipped": false,
-    "change_immediately: true
+    "change_immediately": true
 }
 ```
 
 TODO
-* Buttons
 * Neopixel
 * Screen messages
