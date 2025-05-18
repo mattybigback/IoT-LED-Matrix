@@ -1,9 +1,10 @@
-#ifndef WEBPORTAL_H
-#define WEBPORTAL_H
+#ifndef WEBPORTAL_HPP
+#define WEBPORTAL_HPP
 
-#include <main.hpp>
+#include "main.hpp"
 
 void handleRoot();
-void handleForm();
+void handleAPI();
+void handleFlip();
 
 #endif

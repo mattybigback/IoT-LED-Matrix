@@ -1,16 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <title>LED Matrix Configuration Page</title>
+	<title>Hello!</title>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="style.css">
+	<script src="script.js" defer></script>
+
 </head>
+
 <body>
-    <h2>Matt's Matrix Display</h2>
-    <h3>Control Panel</h3>
-    <form action=/update>
-        <p>Message to display: <input value="%s" name="messageToScroll" maxlength=%d>
-        <p>LED Brightness: <input value=%d name=intensity min=%d max=%d type=number>
-        <p>Scroll Speed (lower is faster): <input value=%d name=speed min=%d max=%d type=number></p><input value=Submit
-            type=submit>
-    </form>
+	<h2>ESP Matrix</h2>
+
+	<form id="messageParameters">
+		<div>
+			<label for="msg">Message:</label>
+			<input id="msg" type="text" name="message" />
+		</div>
+		<div>
+			<label for="intensity">Intensity:</label>
+			<input id="intensity" type="number" name="intensity" />
+		</div>
+		<div>
+			<label for="speed">Speed:</label>
+			<input id="speed" type="number" name="speed" placeholder="Speed" />
+		</div>
+		<div>
+			<label for="displayFlipped">Display Flipped:</label>
+			<input id="displayFlipped" type="checkbox" name="display_flipped" />
+		</div>
+		<div>
+			<label for="changeImmedately">Change Immediately:</label>
+			<input id="changeImmedately" type="checkbox" name="change_immediately" />
+		</div>
+		<button type="submit">Submit</button>
+	</form>
+
 </body>
+
 </html>
