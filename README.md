@@ -141,7 +141,3 @@ Messages and settings can be set and retrieved using the ```/api/message``` API 
     "change_immediately": true
 }
 ```
-
-TODO
-* Neopixel
-* Screen messages
