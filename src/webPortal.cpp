@@ -169,7 +169,7 @@ void handleAPI() {
             debug("Make change immediately: ");
             debugln(imediateChangeVariant.as<bool>());
             if (imediateChangeVariant.as<bool>()) {
-                resetDisplay = resetDisplay |= newMessageAvailable || displaySettingsChanged;
+                resetDisplay |= newMessageAvailable || displaySettingsChanged;
             }
         }
 

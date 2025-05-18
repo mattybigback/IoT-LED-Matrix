@@ -181,7 +181,7 @@ void factoryReset();
 void messageScroll();
 void scrubUserData();
 bool setMatrixOrientation(bool flipDisplay);
-#if DEBUG==1
+#if DEBUG==1&& defined(ARDUINO_ARCH_ESP32)
 void memoryUsage();
 #endif
 void setup();

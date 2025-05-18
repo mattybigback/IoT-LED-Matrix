@@ -4,6 +4,7 @@
 #include "main.hpp"
 
 void startWifiManager();
+void saveConfigCallback();
 void wmCallback(WiFiManager *myWiFiManager);
 
 #endif

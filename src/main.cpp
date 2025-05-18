@@ -59,6 +59,7 @@ uint32_t getChipId() {
 #include <LittleFS.h>
 
 void scrubUserData() {
+    #if defined(ARDUINO_ARCH_ESP32)
     File root = LittleFS.open("/");
     if (!root)
         return; // safety check
@@ -69,9 +70,6 @@ void scrubUserData() {
         #if defined(ARDUINO_ARCH_ESP32)
             String name = entry.path();
         #endif
-        #if defined(ARDUINO_ARCH_ESP8266)
-            String name = entry.name();
-        #endif
             entry.close(); // close the file so that it can be deleted
             if (name.endsWith(".dat")) { // “*.dat” test
                 debug("Removing ");
@@ -80,10 +78,25 @@ void scrubUserData() {
             }
         }
     }
+    #elif defined(ARDUINO_ARCH_ESP8266)
+    Dir dir = LittleFS.openDir("/"); // Use openDir for ESP8266
+    while (dir.next()) { // Iterate over files in the directory
+        String name = dir.fileName();
+        if (name.endsWith(".dat")) { // Check for ".dat" files
+            debug("Removing ");
+            debugln(name);
+            if (LittleFS.remove(name)) {
+                debugln("File removed successfully.");
+            } else {
+                debugln("Failed to remove file.");
+            }
+        }
+    }
+    #endif
 }
 
 
-#if DEBUG==1
+#if DEBUG==1 && defined(ARDUINO_ARCH_ESP32)
 void memoryUsage() {
     // Print the free heap memory
     debug("Free heap: ");
@@ -270,7 +283,7 @@ void setup() {
 
 
 void loop() {
-#if DEBUG==1
+#if DEBUG==1 && defined(ARDUINO_ARCH_ESP32)
     static unsigned long lastMemoryUsageTime = 0; // Tracks the last time memoryUsage() was called
     unsigned long currentMillis = millis();      // Get the current time
     if (currentMillis - lastMemoryUsageTime >= 10000) { // If 60 seconds have passed
@@ -307,5 +320,8 @@ if (!digitalRead(ADDRESS_SCROLL_BUTTON)) {
 } else {
     buttonPreviouslyPressed = false; // Reset the state when the button is released
 }
+    #endif
+    #if defined(ARDUINO_ARCH_ESP8266)
+        MDNS.update();
     #endif
 }
