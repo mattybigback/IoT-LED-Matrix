@@ -2,8 +2,8 @@
 #define COLOUR_NAMES_H
 
 // Allow override of colour order
-#ifndef COLOUR_ORDER
-#define COLOUR_ORDER RGB
+#ifndef LED_COLOUR_ORDER
+#define LED_COLOUR_ORDER RGB
 #endif
 
 // Macro helpers to extract channels in the desired order
@@ -21,7 +21,7 @@
 // Macro to select the correct order
 #define _COLOUR_ORDER_EXPAND(order, r, g, b) _ORDER_##order(r, g, b)
 #define _COLOUR_ORDER_HELPER(order, r, g, b) _COLOUR_ORDER_EXPAND(order, r, g, b)
-#define COLOUR(r, g, b) _COLOUR_ORDER_HELPER(COLOUR_ORDER, r, g, b)
+#define COLOUR(r, g, b) _COLOUR_ORDER_HELPER(LED_COLOUR_ORDER, r, g, b)
 
 // Colours
 #define RED      COLOUR(50,  0,  0)

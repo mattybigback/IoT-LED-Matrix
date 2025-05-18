@@ -24,7 +24,7 @@ void factoryReset() {
 #if defined(HAS_NEOPIXEL)
     neopixelWrite(NEOPIXEL_PIN, WHITE);
 #endif
-    while (digitalRead(SOFT_RESET) == LOW) {
+    while (digitalRead(FACTORY_RESET_PIN) == LOW) {
         yield(); // Hands execution over to network stack to stop the ESP crashing
     }
     WiFi.disconnect(false, true); // Disconnect from WiFi and clear credentials
@@ -142,7 +142,7 @@ void setup() {
     #if defined(HAS_NEOPIXEL)
         neopixelWrite(NEOPIXEL_PIN, YELLOW); // yellow
     #endif
-    pinMode(SOFT_RESET, INPUT_PULLUP);
+    pinMode(FACTORY_RESET_PIN, INPUT_PULLUP);
     #if defined(ADDRESS_SCROLL_BUTTON)
     pinMode(ADDRESS_SCROLL_BUTTON, INPUT_PULLUP);
     #endif
@@ -219,7 +219,7 @@ void setup() {
     matrix.setIntensity(intensity);
 
     // Call factory reset funcion if pin is low
-    if (!digitalRead(SOFT_RESET)) {
+    if (!digitalRead(FACTORY_RESET_PIN)) {
         factoryReset();
     }
 
@@ -299,12 +299,12 @@ void loop() {
     server.handleClient(); // Keep web server ticking over
 
     // Reset if the reset button is pressed
-    if (!digitalRead(SOFT_RESET)) {
+    if (!digitalRead(FACTORY_RESET_PIN)) {
         factoryReset();
     }
-    #if defined(ADDRESS_SCROLL_BUTTON)
+    #if defined(ADDR_SCROLL_PIN)
         static bool buttonPreviouslyPressed = false; // Track the previous state of the button
-        if (!digitalRead(ADDRESS_SCROLL_BUTTON)) {
+        if (!digitalRead(ADDR_SCROLL_PIN)) {
             if (!buttonPreviouslyPressed) { // Only execute if the button was not previously pressed
                 buttonPreviouslyPressed = true; // Update the state to indicate the button is now pressed
                 char ipAddressBuffer[22]; // Char array to store the IP address

@@ -37,7 +37,7 @@ void wmCallback(WiFiManager *myWiFiManager) {
     #if defined(HAS_NEOPIXEL)
     neopixelWrite(NEOPIXEL_PIN, BLUE);
     #endif
-    if (!digitalRead(SOFT_RESET)) {
+    if (!digitalRead(FACTORY_RESET_PIN)) {
         #if defined(HAS_NEOPIXEL)
         neopixelWrite(NEOPIXEL_PIN, RED);
         #endif

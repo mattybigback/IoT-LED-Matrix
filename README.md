@@ -15,7 +15,7 @@ The matrix module used was a generic 32x8 module, commonly sold on Amazon, Ebay 
 
 3. Open the project in your preferred editor/IDE
 
-4. Select the appropriate environment for your development board (or create your own) in ```platformio.ini```
+4. Identify the appropriate environment for your development board and set the appropriate build flags in```platformio.ini``` (See below).
 
 5. Build and upload the file system image
 
@@ -27,14 +27,25 @@ The matrix module used was a generic 32x8 module, commonly sold on Amazon, Ebay 
 
     ```pio run --target upload --environment <environment>```
 
+## Build Flags
+
+There are several build flags that can be set in the platformio.ini file to change the way the project is build. See [PlatformIO Build flags](https://docs.platformio.org/en/stable/projectconf/sections/env/options/build/build_flags.html) for more details.
+
+
+| Flag                  | Purpose                                               | Mandatory | Example                                      |
+| ----------------------|-------------------------------------------------------|-----------|----------------------------------------------|
+|```HAS_NEOPIXEL```     |Define if a neopixel (WS2812b) is present              |No         |N/A                                           |
+|```NEOPIXEL_PIN```     |Sets the GPIO pin that the WS2812b LED is connected to |No         |```NEOPIXEL_PIN=10```                         |
+|```FACTORY_RESET_PIN```|Sets the GPIO pin used for the factory reset button    |Yes        |```FACTORY_RESET_PIN=2```                     |
+|```ADDR_SCROLL_PIN```  |Sets the GPIO pin used for the address scroll button   |No         |```ADDR_SCROLL_PIN=4```                       |
+|```WEB_SERVER_PORT```  |Sets the port that the http server responds on         |No         |```WEB_SERVER_PORT=8080```                    |
+|```LED_COLOUR_ORDER``` |Sets the channel order for the neopixel colours        |No         |```LED_COLOUR_ORDER=GRB```                    |
+|```APNAME_PREFIX```    |SSID Prefix for setup AP                               |No         |```APNAME_PREFIXAPNAME_PREFIX="\"Matrix_\""```|
+|```HOSTNAME_PREFIX```  |Prefix for network hostname and URL                    |No         |```HOSTNAME_PREFIX="\"c3matrix-\""```         |
+
 ## Libraries
 
 The required libraries are listed in the [platformio.ini](http://_vscodecontentref_/0) file. PlatformIO will automatically download and install them when you build the project.
-| Library | Version | Author |
-|---|---|---|
-| [MD_MAX72XX](https://github.com/MajicDesigns/MD_MAX72XX) | 3.5.1 | majicDesigns |
-| [MD_Parola](https://github.com/MajicDesigns/MD_Parola) | 3.7.3 | majicDesigns |
-| [WiFiManager](https://github.com/tzapu/WiFiManager) | 2.0.17 | tzapu |
 
 ## Wiring Instructions (For FC16 Matrix)
 
@@ -88,15 +99,16 @@ There are two optional buttons that have been implemented.
 
 The web portal can be accessed over http using the port defined in platformio.ini (default is port 80). Additionally, mDNS is implemented, so if your device supports it you can access the web portal using the .local URL. This URL can be customised by using the build flag ```HOSTNAME_PREFIX```.
 
+
 The configuration page includes the following parameters:
 
-| Parameter           | Input Type   | Description                                                                 | Limits                          |
-|---------------------|--------------|-----------------------------------------------------------------------------|---------------------------------|
-| **Message**         | Text Field   | Input the message to be displayed on the matrix.                           | Up to 500 characters.|
-| **Intensity**       | Numeric Field| Adjust the brightness of the display.                                      | 0 (dim) to 15 (bright).         |
-| **Speed**           | Numeric Field| Set the scrolling speed of the message.                                    | 10 (fast) to 200 (slow).          |
-| **Display Flipped** | Checkbox     | Flip the display orientation.                                              | N/A                             |
-| **Change Immediately** | Checkbox  | Apply changes instantly without waiting for the current message to finish. | N/A                             |
+| Parameter              | Input Type  | Description                                                                | Limits                          |
+|------------------------|-------------|----------------------------------------------------------------------------|---------------------------------|
+| **Message**            |Text Field   | Input the message to be displayed on the matrix.                           | Up to 500 characters.           |
+| **Intensity**          |Numeric Field| Adjust the brightness of the display.                                      | 0 (dim) to 15 (bright).         |
+| **Speed**              |Numeric Field| Set the scrolling speed of the message.                                    | 10 (fast) to 200 (slow).        |
+| **Display Flipped**    |Checkbox     | Flip the display orientation.                                              | N/A                             |
+| **Change Immediately** |Checkbox     | Apply changes instantly without waiting for the current message to finish. | N/A                             |
 
 When a new message or setting is submitted, the display updates immediately (if "Change Immediately" is checked) or after the current message finishes. All settings and messages are stored in the ESP module's file system, ensuring persistence across power cycles.
 
