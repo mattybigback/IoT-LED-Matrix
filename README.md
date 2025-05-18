@@ -42,6 +42,7 @@ There are several build flags that can be set in the platformio.ini file to chan
 |```LED_COLOUR_ORDER``` |Sets the channel order for the neopixel colours        |No         |```LED_COLOUR_ORDER=GRB```                    |
 |```APNAME_PREFIX```    |SSID Prefix for setup AP                               |No         |```APNAME_PREFIXAPNAME_PREFIX="\"Matrix_\""```|
 |```HOSTNAME_PREFIX```  |Prefix for network hostname and URL                    |No         |```HOSTNAME_PREFIX="\"c3matrix-\""```         |
+|```DEBUG```            |Prints debug messages via UART                         |No         |```DEBUG=1```                                 |
 
 ## Libraries
 
