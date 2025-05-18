@@ -121,7 +121,9 @@
     the maximum length for an SSID is 31 characters (plus null terminator), 
     and 6 are used for the board ID
 */
-#define APNAME_PREFIX "MATRIX_SETUP_"
+#ifndef APNAME_PREFIX
+    #define APNAME_PREFIX "MATRIX_SETUP_"
+#endif
 static_assert(
     sizeof(APNAME_PREFIX) - 1 <= 25,
         "APNAME_PREFIX is too long: SSID (prefix + 6 hex chars) must be <= 31 characters."
@@ -133,7 +135,9 @@ static_assert(
     and 6 are used for the board ID
 */
 
-#define HOSTNAME_PREFIX "espmatrix-"
+#ifndef HOSTNAME_PREFIX
+    #define HOSTNAME_PREFIX "espmatrix-"
+#endif
 static_assert(
     sizeof(HOSTNAME_PREFIX) - 1 <= 25,
         "APNAME_PREFIX is too long: hostname (prefix + 6 hex chars) must be <= 31 characters."
