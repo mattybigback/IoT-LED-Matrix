@@ -82,7 +82,6 @@
 
 /* --  Serial debugging macro definitions  -- */
 #define BAUD_RATE 115200
-#define DEBUG 1 // Set to 1 to enable debug messages
 #if DEBUG == 1                      // If DEBUG is set to 1 then enable debug macros
     #if defined(ALT_SERIAL)         // If ALT_SERIAL is defined then use that for debugging
         #define debug(x) ALT_SERIAL.print(x)
