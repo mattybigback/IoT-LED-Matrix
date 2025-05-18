@@ -227,6 +227,10 @@ void setup() {
 
     // Start WiFiManager
     startWifiManager();
+    WiFi.setAutoReconnect(true);
+    #if defined(ARDUINO_ARCH_ESP32)
+    WiFi.persistent(true);
+    #endif
     #if defined(HAS_NEOPIXEL)
         neopixelWrite(NEOPIXEL_PIN, GREEN); // green
     #endif
@@ -293,33 +297,33 @@ void loop() {
 #endif
     messageScroll();       // Scroll the message
     server.handleClient(); // Keep web server ticking over
+
     // Reset if the reset button is pressed
     if (!digitalRead(SOFT_RESET)) {
         factoryReset();
     }
     #if defined(ADDRESS_SCROLL_BUTTON)
-    static bool buttonPreviouslyPressed = false; // Track the previous state of the button
-
-if (!digitalRead(ADDRESS_SCROLL_BUTTON)) {
-    if (!buttonPreviouslyPressed) { // Only execute if the button was not previously pressed
-        buttonPreviouslyPressed = true; // Update the state to indicate the button is now pressed
-        char ipAddressBuffer[22]; // Char array to store the IP address
-        getIpAddress(ipAddressBuffer, sizeof(ipAddressBuffer), true);
-        snprintf(curMessage, MSG_BUF_SIZE, "%s    %s", ipAddressBuffer, getURL());
-        // Reset Display
-        matrix.displayClear();
-        // Set up text scroll animation
-        matrix.displayText(curMessage, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
-        //messageScroll();
-        
-        // Set flags to notify that a new message is available and that the display settings have changed
-        // This is done so that the display will reset and scroll the new message when the IP address is finished scrolling
-        newMessageAvailable = true;
-        displaySettingsChanged = true;
-    }
-} else {
-    buttonPreviouslyPressed = false; // Reset the state when the button is released
-}
+        static bool buttonPreviouslyPressed = false; // Track the previous state of the button
+        if (!digitalRead(ADDRESS_SCROLL_BUTTON)) {
+            if (!buttonPreviouslyPressed) { // Only execute if the button was not previously pressed
+                buttonPreviouslyPressed = true; // Update the state to indicate the button is now pressed
+                char ipAddressBuffer[22]; // Char array to store the IP address
+                getIpAddress(ipAddressBuffer, sizeof(ipAddressBuffer), true);
+                snprintf(curMessage, MSG_BUF_SIZE, "%s    %s", ipAddressBuffer, getURL());
+                // Reset Display
+                matrix.displayClear();
+                // Set up text scroll animation
+                matrix.displayText(curMessage, scrollAlign, scrollSpeed, scrollPause, scrollEffect, scrollEffect);
+                //messageScroll();
+                
+                // Set flags to notify that a new message is available and that the display settings have changed
+                // This is done so that the display will reset and scroll the new message when the IP address is finished scrolling
+                newMessageAvailable = true;
+                displaySettingsChanged = true;
+            }
+        } else {
+            buttonPreviouslyPressed = false; // Reset the state when the button is released
+        }
     #endif
     #if defined(ARDUINO_ARCH_ESP8266)
         MDNS.update();
