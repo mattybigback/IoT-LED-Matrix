@@ -1,9 +1,11 @@
 # ESP Matrix Display
-A simple scrolling message display that can be updated over WiFi from a web browser. Written using PlatformIO.
+A simple scrolling message display that can be updated over WiFi from a web browser or using a a REST API.
+
+![Scrolling gif of matrix in action](docs\resources\matrixscroll.gif)
 
 ## Hardware Requirements
 
-The code has been tested on the Wemos D1 R2 board and on a generic ESP32-C3 devboard, though any ESP8266 or ESP32 should work (check the pin numbers).
+The code has been tested on both ESP8266 and ESP32 development boards. See [here](#mcu-specific-gpio-pins) for board-specific information.
 
 The matrix module used was a generic 32x8 module, commonly sold on Amazon, Ebay etc. The MD_Parola library defines this as FC16 hardware.
 
@@ -60,7 +62,8 @@ The required libraries are listed in the [platformio.ini](http://_vscodecontentr
 
 Ensure the power supply can handle the current requirements of the LED matrix. Pin assignments will differ based on the MCU and board used. Always double check before powering up.
 
-## GPIO Pins Used
+
+## MCU-specific GPIO Pins
 
 | Board            | SCK         |     MOSI    | CS (SS)     | Factory Reset | Address Scroll |
 |---------------------|-------------|-------------|-------------|------------|----------------|
