@@ -1,7 +1,7 @@
 # ESP Matrix Display
 A simple scrolling message display that can be updated over WiFi from a web browser or using a a REST API.
 
-![Scrolling gif of matrix in action](docs\resources\matrixscroll.gif)
+![Scrolling gif of matrix in action](docs/resources/matrixscroll.gif)
 
 ## Hardware Requirements
 
