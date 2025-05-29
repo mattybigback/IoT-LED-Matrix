@@ -1,12 +1,219 @@
-form div {
+body {
+    font-family: sans-serif;
+}
+
+h2 {
+    text-align: center
+}
+
+form {
+    display: block;
+    margin-bottom: 1%;
+    margin-top: 10px;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 60%;
+    background-color: rgb(226, 226, 226);
+    border-radius: 20px;
+}
+
+div.row {
+    display: flex;
+    justify-content: space-between;
     margin-bottom: 10px;
 }
 
+
+
 label {
     display: inline-block;
-    width: 150px;
+    width: 100px;
+    margin-top:auto;
+    margin-bottom:auto;
+    font-size: large;
+
 }
 
-#msg {
-    width: 400px;
+.sliderValue {
+    display: inline-block;
+    width: 50px;
+    text-align: center;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top:auto;
+    margin-bottom:auto;
+}
+
+input {
+    display: inline-block;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    text-align: left;
+    width: 80%;
+}
+
+textarea {
+    display: inline-block;
+    width: 80%;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    text-align: left;
+    resize: none;
+}
+
+button {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #04a96d;
+    border: none;
+    border-radius: 40px;
+    color: #ffffff;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 18px;
+    width: 60%;
+
+}
+
+button:hover {
+    background-color: #076945;
+    /* Green */
+    cursor: pointer
+}
+
+button, .slider {
+  transition: box-shadow 0.4s;
+}
+
+.slider, .slider:focus {
+  transition: box-shadow 0.4s, outline 0.4s;
+}
+
+.switchLabel {
+    display: inline-block;
+    width: 200px;
+    text-align: left;
+    margin-top:auto;
+    margin-bottom:auto;
+    font-size: large;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input { 
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switchSlider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+.switchSlider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: .4s;
+  transition: .4s;
+}
+
+input:checked + .switchSlider {
+  background-color: #04a96d;
+}
+
+
+input:focus + .switchSlider {
+  box-shadow: 0 0 15px #008cff;
+}
+
+.slider:focus {
+  box-shadow: 0 0 15px #008cff;
+}
+
+button:focus {
+  box-shadow: 0 0 15px #008cff;
+}
+
+input:checked + .switchSlider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
+}
+
+/* Rounded sliders */
+.switchSlider.round {
+  border-radius: 34px;
+}
+
+.switchSlider.round:before {
+  border-radius: 50%;
+}
+
+.slidecontainer {
+  width: 100%;
+}
+
+.slider {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  height: 34px;
+  background: #ffffff;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .4s;
+  transition: opacity .4s;
+  border: 2px solid;
+  border-radius: 30px;
+  padding: 0 4px
+}
+
+.slider:hover {
+  opacity: 1;
+  
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  background: #04AA6D;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 2px solid;
+}
+
+.slider::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  background: #04AA6D;
+  cursor: pointer;
+  border-radius: 50%;
+  border: 2px solid;
+
 }

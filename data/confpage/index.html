@@ -13,25 +13,33 @@
 	<h2>ESP Matrix</h2>
 
 	<form id="messageParameters">
-		<div>
+		<div class="row" id="messageRow">
 			<label for="msg">Message:</label>
-			<input id="msg" type="text" name="message" />
+			<textarea id="msg" name="message" rows="7">	</textarea>
 		</div>
-		<div>
+		<div class="row">
 			<label for="intensity">Intensity:</label>
-			<input id="intensity" type="number" name="intensity" />
+			<span class="sliderValue" id="intensityValue">0</span>
+			<input id="intensity" class="slider"type="range" name="intensity" />
 		</div>
-		<div>
+		<div class="row">
 			<label for="speed">Speed:</label>
-			<input id="speed" type="number" name="speed" placeholder="Speed" />
+			<span class="sliderValue" id="speedValue">0</span>
+			<input id="speed" class=slider type="range" name="speed" />
 		</div>
-		<div>
-			<label for="displayFlipped">Display Flipped:</label>
-			<input id="displayFlipped" type="checkbox" name="display_flipped" />
+		<div class="row">
+			<span class="switchLabel">Display Flipped:</span>
+			<label class="switch" for="displayFlipped">
+				<input id="displayFlipped" type="checkbox" name="display_flipped" />
+				<span class="switchSlider round"></span>
+			</label>
 		</div>
-		<div>
-			<label for="changeImmedately">Change Immediately:</label>
-			<input id="changeImmedately" type="checkbox" name="change_immediately" />
+		<div class="row">
+			<span class="switchLabel">Change Immediately:</span>
+			<label class="switch" for="changeImmedately">
+				<input class="switch" id="changeImmedately" type="checkbox" name="change_immediately" checked=true/>
+				<span class="switchSlider round"></span>
+			</label>
 		</div>
 		<button type="submit">Submit</button>
 	</form>
