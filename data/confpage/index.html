@@ -14,30 +14,40 @@
 
 	<form id="messageParameters">
 		<div class="row" id="messageRow">
-			<label for="msg">Message:</label>
-			<textarea id="msg" name="message" rows="7">	</textarea>
+			<label id="msgLabel" for="msg">Message:</label>
+			<div class="inputWrap">
+				<textarea id="msg" name="message" rows="7"></textarea>
+			</div>
 		</div>
 		<div class="row">
-			<label for="intensity">Intensity:</label>
-			<span class="sliderValue" id="intensityValue">0</span>
-			<input id="intensity" class="slider"type="range" name="intensity" />
+			<div class="sliderLabelValue">
+				<label for="intensity">Intensity:</label>
+				<span class="sliderValue" id="intensityValue">0</span>
+			</div>
+			<div class="inputWrap">
+				<input id="intensity" class="slider" type="range" name="intensity" />
+			</div>
 		</div>
 		<div class="row">
-			<label for="speed">Speed:</label>
-			<span class="sliderValue" id="speedValue">0</span>
-			<input id="speed" class=slider type="range" name="speed" />
+			<div class="sliderLabelValue">
+				<label for="speed">Speed:</label>
+				<span class="sliderValue" id="speedValue">0</span>
+			</div>
+			<div class="inputWrap">
+				<input id="speed" class="slider" type="range" name="speed" />
+			</div>
 		</div>
-		<div class="row">
+		<div class="row switchRow">
 			<span class="switchLabel">Display Flipped:</span>
 			<label class="switch" for="displayFlipped">
 				<input id="displayFlipped" type="checkbox" name="display_flipped" />
 				<span class="switchSlider round"></span>
 			</label>
 		</div>
-		<div class="row">
+		<div class="row switchRow">
 			<span class="switchLabel">Change Immediately:</span>
 			<label class="switch" for="changeImmedately">
-				<input class="switch" id="changeImmedately" type="checkbox" name="change_immediately" checked=true/>
+				<input id="changeImmedately" type="checkbox" name="change_immediately" checked />
 				<span class="switchSlider round"></span>
 			</label>
 		</div>

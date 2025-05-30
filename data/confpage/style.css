@@ -1,219 +1,268 @@
+:root {
+  --slider-thumb-bg:       #04AA6D;
+  --slider-thumb-border:   #04AA6D;
+  --slider-thumb-hover-bg: #076945;
+}
+
+/* ===== Base ===== */
 body {
-    font-family: sans-serif;
+  font-family: sans-serif;
+  min-width: 210px;
 }
-
 h2 {
-    text-align: center
+  text-align: center;
 }
 
+/* ===== Form Wrapper ===== */
 form {
-    display: block;
-    margin-bottom: 1%;
-    margin-top: 10px;
-    padding-top: 20px;
-    padding-bottom: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    margin-left: auto;
-    margin-right: auto;
-    width: 60%;
-    background-color: rgb(226, 226, 226);
-    border-radius: 20px;
+  width: 80%;
+  max-width: 600px;
+  margin: 10px auto 1%;
+  padding: 20px 16px;
+  background: #e2e2e2;
+  border-radius: 20px;
 }
 
-div.row {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
+/* ===== Rows ===== */
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
-
-
-label {
-    display: inline-block;
-    width: 100px;
-    margin-top:auto;
-    margin-bottom:auto;
-    font-size: large;
-
-}
-
-.sliderValue {
-    display: inline-block;
-    width: 50px;
-    text-align: center;
-    margin-left: 10px;
-    margin-right: 10px;
-    margin-top:auto;
-    margin-bottom:auto;
-}
-
-input {
-    display: inline-block;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    text-align: left;
-    width: 80%;
-}
-
-textarea {
-    display: inline-block;
-    width: 80%;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    text-align: left;
-    resize: none;
-}
-
-button {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    background-color: #04a96d;
-    border: none;
-    border-radius: 40px;
-    color: #ffffff;
-    padding: 15px 32px;
-    text-align: center;
-    text-decoration: none;
-    font-size: 18px;
-    width: 60%;
-
-}
-
-button:hover {
-    background-color: #076945;
-    /* Green */
-    cursor: pointer
-}
-
-button, .slider {
-  transition: box-shadow 0.4s;
-}
-
-.slider, .slider:focus {
-  transition: box-shadow 0.4s, outline 0.4s;
-}
-
+/* ===== Labels ===== */
+label,
 .switchLabel {
-    display: inline-block;
-    width: 200px;
-    text-align: left;
-    margin-top:auto;
-    margin-bottom:auto;
-    font-size: large;
+  display: inline-block;
+  margin: auto 0;
+  font-size: large;
+  font-weight: bold;
+}
+label {
+  width: 10%;
+}
+.switchLabel {
+  flex: 1 1 120px;
+  min-width: 0;
 }
 
+/* ===== Inputs & Textareas ===== */
+input,
+textarea {
+  display: inline-block;
+  width: 80%;
+  margin: 5px 0;
+  text-align: left;
+  min-width: 0;
+}
+textarea {
+  resize: none;
+}
+
+/* ===== Button ===== */
+button {
+  display: block;
+  width: 60%;
+  margin: 0 auto;
+  padding: 15px 32px;
+  font-size: 18px;
+  background: #04a96d;
+  color: #fff;
+  border: none;
+  border-radius: 40px;
+  text-align: center;
+  transition: box-shadow .4s;
+}
+button:hover {
+  background: #076945;
+  cursor: pointer;
+}
+button:focus {
+  box-shadow: 0 0 15px #008cff;
+}
+
+/* ===== Slider Track & Thumb ===== */
+.slidecontainer {
+  width: 100%;
+}
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  flex: 1 1 0;
+  height: 34px;
+  padding: 0 4px;
+  background: #fff;
+  border: 2px solid;
+  border-radius: 34px;
+  outline: none;
+  transition: opacity .4s, box-shadow .4s;
+}
+.slider:hover {
+  opacity: 1;
+}
+.slider:focus {
+  box-shadow: 0 0 15px #008cff;
+}
+
+/* Thumb theming */
+input[type="range"].slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  background: var(--slider-thumb-bg);
+  border: 2px solid var(--slider-thumb-border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color .2s;
+}
+input[type="range"].slider::-webkit-slider-thumb:hover {
+  background: var(--slider-thumb-hover-bg);
+}
+input[type="range"].slider::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  background: var(--slider-thumb-bg);
+  border: 2px solid var(--slider-thumb-border);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color .2s;
+}
+input[type="range"].slider::-moz-range-thumb:hover {
+  background: var(--slider-thumb-hover-bg);
+}
+
+/* ===== Slider Value Display ===== */
+.sliderValue {
+  display: inline-block;
+  width: 3em;
+  margin: auto 5px auto 0;
+  font-size: large;
+  text-align: right;
+  flex-shrink: 0;
+}
+.sliderLabelValue {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px;
+  width: 8em;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+
+
+
+
+
+/* ===== Toggle Switch ===== */
 .switch {
   position: relative;
   display: inline-block;
   width: 60px;
   height: 34px;
+  border: 2px solid gray;
+  border-radius: 34px;
+  flex-shrink: 0;
+  min-width: 60px;
 }
-
-.switch input { 
+.switch input {
   opacity: 0;
   width: 0;
   height: 0;
 }
-
 .switchSlider {
   position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #ccc;
-  -webkit-transition: .4s;
+  inset: 0;
+  background: #ccc;
+  border-radius: 34px;
   transition: .4s;
+  cursor: pointer;
 }
-
 .switchSlider:before {
-  position: absolute;
   content: "";
-  height: 26px;
+  position: absolute;
   width: 26px;
+  height: 26px;
   left: 4px;
   bottom: 4px;
-  background-color: white;
-  -webkit-transition: .4s;
+  background: #fff;
+  border-radius: 50%;
   transition: .4s;
 }
-
 input:checked + .switchSlider {
-  background-color: #04a96d;
+  background: #04a96d;
 }
-
-
+input:checked + .switchSlider:before {
+  transform: translateX(26px);
+}
 input:focus + .switchSlider {
   box-shadow: 0 0 15px #008cff;
 }
 
-.slider:focus {
-  box-shadow: 0 0 15px #008cff;
+/* ===== Input Wrapper ===== */
+.inputWrap {
+  width: 450px;
+  max-width: 100%;
+  min-width: 200px;
+  box-sizing: border-box;
 }
-
-button:focus {
-  box-shadow: 0 0 15px #008cff;
-}
-
-input:checked + .switchSlider:before {
-  -webkit-transform: translateX(26px);
-  -ms-transform: translateX(26px);
-  transform: translateX(26px);
-}
-
-/* Rounded sliders */
-.switchSlider.round {
-  border-radius: 34px;
-}
-
-.switchSlider.round:before {
-  border-radius: 50%;
-}
-
-.slidecontainer {
+.inputWrap textarea,
+.inputWrap .slider {
   width: 100%;
+  box-sizing: border-box;
 }
 
-.slider {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100%;
-  height: 34px;
-  background: #ffffff;
-  outline: none;
-  opacity: 0.7;
-  -webkit-transition: .4s;
-  transition: opacity .4s;
-  border: 2px solid;
-  border-radius: 30px;
-  padding: 0 4px
-}
+/* ===== Responsive Portrait ===== */
+@media (max-width: 700px) {
+  /* Stack each row */
+  .row {
+    flex-direction: column;
+    align-items: stretch;   /* children fill width */
+    gap: 5px;
+  }
 
-.slider:hover {
-  opacity: 1;
-  
-}
+  /* Labels, switches, inputs, sliders all full width */
+  label,
+  .switchLabel,
+  input,
+  textarea,
+  button,
+  .slider {
+    width: 100%;
+    min-width: 0;
+  }
 
-.slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 26px;
-  height: 26px;
-  background: #04AA6D;
-  cursor: pointer;
-  border-radius: 50%;
-  border: 2px solid;
-}
+  /* Give labels a bit of space below */
+  label,
+  .switchLabel {
+    margin-bottom: 5px;
+    text-align: left;
+  }
 
-.slider::-moz-range-thumb {
-  width: 26px;
-  height: 26px;
-  background: #04AA6D;
-  cursor: pointer;
-  border-radius: 50%;
-  border: 2px solid;
+  /* Sliders shouldn’t flex in portrait, just be 100% wide */
+  .slider {
+    flex: none;
+  }
 
+  .sliderLabelValue {
+    width: 100%;
+  }
+
+  /* Keep switch rows inline */
+  .switchRow {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .inputWrap {
+    width: 100%;
+    min-width: 0;
+  }
 }
