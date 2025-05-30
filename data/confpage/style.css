@@ -1,6 +1,6 @@
 :root {
-  --slider-thumb-bg:       #04AA6D;
-  --slider-thumb-border:   #04AA6D;
+  --slider-thumb-bg: #04AA6D;
+  --slider-thumb-border: #04AA6D;
   --slider-thumb-hover-bg: #076945;
 }
 
@@ -9,6 +9,7 @@ body {
   font-family: sans-serif;
   min-width: 210px;
 }
+
 h2 {
   text-align: center;
 }
@@ -40,9 +41,11 @@ label,
   font-size: large;
   font-weight: bold;
 }
+
 label {
   width: 10%;
 }
+
 .switchLabel {
   flex: 1 1 120px;
   min-width: 0;
@@ -57,8 +60,10 @@ textarea {
   text-align: left;
   min-width: 0;
 }
+
 textarea {
   resize: none;
+  height: 8em;
 }
 
 /* ===== Button ===== */
@@ -75,10 +80,12 @@ button {
   text-align: center;
   transition: box-shadow .4s;
 }
+
 button:hover {
   background: #076945;
   cursor: pointer;
 }
+
 button:focus {
   box-shadow: 0 0 15px #008cff;
 }
@@ -87,6 +94,7 @@ button:focus {
 .slidecontainer {
   width: 100%;
 }
+
 .slider {
   -webkit-appearance: none;
   appearance: none;
@@ -99,9 +107,11 @@ button:focus {
   outline: none;
   transition: opacity .4s, box-shadow .4s;
 }
+
 .slider:hover {
   opacity: 1;
 }
+
 .slider:focus {
   box-shadow: 0 0 15px #008cff;
 }
@@ -118,9 +128,11 @@ input[type="range"].slider::-webkit-slider-thumb {
   cursor: pointer;
   transition: background-color .2s;
 }
+
 input[type="range"].slider::-webkit-slider-thumb:hover {
   background: var(--slider-thumb-hover-bg);
 }
+
 input[type="range"].slider::-moz-range-thumb {
   width: 26px;
   height: 26px;
@@ -130,6 +142,7 @@ input[type="range"].slider::-moz-range-thumb {
   cursor: pointer;
   transition: background-color .2s;
 }
+
 input[type="range"].slider::-moz-range-thumb:hover {
   background: var(--slider-thumb-hover-bg);
 }
@@ -143,6 +156,7 @@ input[type="range"].slider::-moz-range-thumb:hover {
   text-align: right;
   flex-shrink: 0;
 }
+
 .sliderLabelValue {
   display: flex;
   align-items: center;
@@ -169,11 +183,13 @@ input[type="range"].slider::-moz-range-thumb:hover {
   flex-shrink: 0;
   min-width: 60px;
 }
+
 .switch input {
   opacity: 0;
   width: 0;
   height: 0;
 }
+
 .switchSlider {
   position: absolute;
   inset: 0;
@@ -182,6 +198,7 @@ input[type="range"].slider::-moz-range-thumb:hover {
   transition: .4s;
   cursor: pointer;
 }
+
 .switchSlider:before {
   content: "";
   position: absolute;
@@ -193,13 +210,16 @@ input[type="range"].slider::-moz-range-thumb:hover {
   border-radius: 50%;
   transition: .4s;
 }
-input:checked + .switchSlider {
+
+input:checked+.switchSlider {
   background: #04a96d;
 }
-input:checked + .switchSlider:before {
+
+input:checked+.switchSlider:before {
   transform: translateX(26px);
 }
-input:focus + .switchSlider {
+
+input:focus+.switchSlider {
   box-shadow: 0 0 15px #008cff;
 }
 
@@ -210,6 +230,7 @@ input:focus + .switchSlider {
   min-width: 200px;
   box-sizing: border-box;
 }
+
 .inputWrap textarea,
 .inputWrap .slider {
   width: 100%;
@@ -217,12 +238,30 @@ input:focus + .switchSlider {
 }
 
 /* ===== Responsive Portrait ===== */
-@media (max-width: 700px) {
+@media (max-width: 700px),
+(orientation: portrait) {
+  h2{
+    font-size: 3em;
+  }
+  form {
+    width: 90%;
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
   /* Stack each row */
   .row {
     flex-direction: column;
-    align-items: stretch;   /* children fill width */
+    align-items: stretch;
+    /* children fill width */
     gap: 5px;
+  }
+
+  textarea {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 36px;
+        height: 15em;
   }
 
   /* Labels, switches, inputs, sliders all full width */
@@ -231,9 +270,70 @@ input:focus + .switchSlider {
   input,
   textarea,
   button,
-  .slider {
+  .slider,
+  .sliderValue {
     width: 100%;
     min-width: 0;
+    font-size: xx-large
+  }
+
+/* ===== Slider Track & Thumb ===== */
+
+  .slider {
+    flex:none;
+    height: 72px;
+    padding: 0 8px;
+    border: 3px solid gray;
+    border-radius: 68px;
+    outline: none;
+  }
+
+/* Thumb theming */
+input[type="range"].slider::-webkit-slider-thumb {
+
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--slider-thumb-border);
+}
+
+
+
+input[type="range"].slider::-moz-range-thumb {
+  width: 52px;
+  height: 52px;
+  border: 1px solid var(--slider-thumb-border);
+}
+
+
+
+/* ===== Toggle Switch ===== */
+
+  .switch {
+    width: 120px;
+    height: 68px;
+    border-radius: 68px;
+    border: 3px solid gray;
+
+  }
+
+  .switchSlider {
+    border-radius: 68px;
+  }
+
+  .switchSlider:before {
+    width: 52px;
+    height: 52px;
+    left: 8px;
+    bottom: 8px;
+
+  }
+
+  input:checked+.switchSlider:before {
+    transform: translateX(52px);
+  }
+
+  input:focus+.switchSlider {
+    box-shadow: 0 0 0px #008cff;
   }
 
   /* Give labels a bit of space below */
@@ -243,10 +343,7 @@ input:focus + .switchSlider {
     text-align: left;
   }
 
-  /* Sliders shouldn’t flex in portrait, just be 100% wide */
-  .slider {
-    flex: none;
-  }
+
 
   .sliderLabelValue {
     width: 100%;
