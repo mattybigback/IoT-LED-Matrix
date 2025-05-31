@@ -42,16 +42,37 @@ document.addEventListener('DOMContentLoaded', () => {
         })
             .then(response => {
                 if (!response.ok) {
+                    showStatusMessage("Error updating device", "var(--error-color)");
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                showStatusMessage("Device updated!", "var(--accent-color)");
                 return response.json();
             })
             .then(result => {
                 console.log('Data successfully updated:', result);
             })
-            .catch(err => console.error('Failed to update data:', err));
+            .catch(err => {
+                showStatusMessage("Error updating device", "var(--error-color)");
+                console.error('Failed to update data:', err);
+            });
     });
 });
+
+function showStatusMessage(text, bgColor) {
+    const statusMessage = document.getElementById('statusMessage');
+    statusMessage.textContent = text;
+    statusMessage.style.background = bgColor;
+    statusMessage.classList.remove('fade-out');
+    statusMessage.classList.add('show');
+    clearTimeout(statusMessage._timeout);
+
+    statusMessage._timeout = setTimeout(() => {
+        statusMessage.classList.add('fade-out');
+        statusMessage._timeout = setTimeout(() => {
+            statusMessage.classList.remove('show', 'fade-out');
+        }, 600); // match the CSS transition duration
+    }, 3000);
+}
 
 var intensitySlider = document.getElementById("intensity");
 var intensityOutput = document.getElementById("intensityValue");
