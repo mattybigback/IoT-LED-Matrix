@@ -1,9 +1,7 @@
 :root {
   --accent-color: #04AA6D;
   --accent-hover-color: #076945;
-  /* --slider-thumb-bg: #04AA6D;
-  --slider-thumb-border: #04AA6D;
-  --slider-thumb-hover-bg: #076945; */
+  --error-color: #ff4d4d;
 }
 
 /* ===== Base ===== */
@@ -65,7 +63,8 @@ textarea {
 
 textarea {
   resize: none;
-  height: 8em;
+  height: 6em;
+  font-size: x-large;
 }
 
 /* ===== Button ===== */
@@ -125,7 +124,6 @@ input[type="range"].slider::-webkit-slider-thumb {
   width: 26px;
   height: 26px;
   background: var(--accent-color);
-  /* border: 2px solid var(--slider-thumb-border); */
   border-radius: 50%;
   cursor: pointer;
   transition: background-color .2s;
@@ -139,7 +137,6 @@ input[type="range"].slider::-moz-range-thumb {
   width: 26px;
   height: 26px;
   background: var(--accent-color);
-  /* border: 2px solid var(--slider-thumb-border); */
   border-radius: 50%;
   cursor: pointer;
   transition: background-color .2s;
@@ -239,6 +236,25 @@ input:focus+.switchSlider {
   box-sizing: border-box;
 }
 
+/* ===== Status ===== */
+#statusMessage {
+  display: block;
+  width: 50%;
+  margin: 0 auto;
+  padding: 15px 32px;
+  font-size: 18px;
+  background: var(--accent-color);
+  color: #fff;
+  border: none;
+  border-radius: 40px;
+  text-align: center;
+  transition: box-shadow .4s;
+}
+
+
+
+
+
 /* ===== Responsive Portrait ===== */
 @media (max-width: 700px),
 (orientation: portrait) {
@@ -250,6 +266,7 @@ input:focus+.switchSlider {
     max-width: 90%;
     margin-left: auto;
     margin-right: auto;
+    border-radius: 40px;
   }
 
   /* Stack each row */
@@ -257,13 +274,14 @@ input:focus+.switchSlider {
     flex-direction: column;
     align-items: stretch;
     /* children fill width */
-    gap: 5px;
+    gap: 8px;
+    padding-bottom:30px;
   }
 
   textarea {
-    font-family: 'Courier New', Courier, monospace;
+    font-family: system-ui;
     font-size: 36px;
-        height: 15em;
+    height: 9em;
   }
 
   /* Labels, switches, inputs, sliders all full width */
@@ -276,8 +294,16 @@ input:focus+.switchSlider {
   .sliderValue {
     width: 100%;
     min-width: 0;
-    font-size: xx-large
+    font-size: 3em;
   }
+
+  #statusMessage {
+    font-size: 3em;
+    width:90%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
 
 /* ===== Slider Track & Thumb ===== */
 
@@ -288,6 +314,11 @@ input:focus+.switchSlider {
     border: 3px solid gray;
     border-radius: 68px;
     outline: none;
+  }
+
+  .sliderValue {
+    width: 5em;
+    padding-right: 10px;
   }
 
 /* Thumb theming */
@@ -341,7 +372,7 @@ input[type="range"].slider::-moz-range-thumb {
   /* Give labels a bit of space below */
   label,
   .switchLabel {
-    margin-bottom: 5px;
+    /* margin-bottom: 5px; */
     text-align: left;
   }
 
@@ -364,4 +395,9 @@ input[type="range"].slider::-moz-range-thumb {
     width: 100%;
     min-width: 0;
   }
+}
+/* ===== Button ===== */
+
+button {
+  margin-top: 30px;
 }
